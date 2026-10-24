@@ -1,58 +1,116 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Cytech EC — STEP 01 開発環境
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+実装先：`/home/keisuke/CyTech_STEP9/cytech_STEP9_app`
 
-## About Laravel
+## 構成
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.5.12 / Laravel 13 / Laravel Sail
+- Laravel Breeze 2.4.2（Blade・PHPUnit）、Alpine.js
+- Vite 8 / Tailwind CSS 4（Breeze生成スタイルを4系へ調整）
+- MySQL 8.4 / phpMyAdmin / Mailpit
+- Laravel Boost（AGENTS.mdの指定に従った開発用パッケージ）
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+現在はBreeze標準の認証画面までを導入した段階です。漢字名・カナ名、登録後のログイン画面への遷移、商品画面などは後続STEPで実装します。Breeze標準のダッシュボード・プロフィール等も、後続STEPで仕様に合わせて整理します。
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 初回セットアップ
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Docker EngineとDocker Composeを起動しておきます。以下はプロジェクトルートで実行します。既存の`.env`は上書きせず、初回のみコピーしてください。
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+cd /home/keisuke/CyTech_STEP9/cytech_STEP9_app
+cp .env.example .env
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+`.env`の`WWWUSER`・`WWWGROUP`はホスト側の`id -u`・`id -g`に合わせます。DBの初期パスワードは開発用です。変更する場合はDBの初回起動前に設定してください。既存DBボリュームがある場合、環境変数を変えるだけではDB内の認証情報は変わりません。
 
-## Contributing
+ホストにPHP・Composerがない場合、依存パッケージを初回だけコンテナから導入できます。
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/var/www/html" -w /var/www/html laravelsail/php85-composer:latest composer install --no-interaction
+```
 
-## Code of Conduct
+その後、Sailで起動します。
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+./vendor/bin/sail build
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan key:generate
+./vendor/bin/sail artisan migrate
+./vendor/bin/sail npm ci
+./vendor/bin/sail npm run build
+```
 
-## Security Vulnerabilities
+`migrate`は既存データを削除しない通常の適用です。`migrate:fresh`や`down -v`は通常の起動には使いません。
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 日常の起動・停止
 
-## License
+```bash
+./vendor/bin/sail up -d
+./vendor/bin/sail npm run dev
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Viteは起動したターミナルを使用します。停止はCtrl+C。Viteを使わず確認する場合は`./vendor/bin/sail npm run build`を実行します。
+
+```bash
+./vendor/bin/sail down
+```
+
+## 接続先
+
+`.env.example`のポート設定での接続先です。既存`.env`で変更している場合はそちらを優先します。
+
+| 用途 | URL・設定 |
+|---|---|
+| アプリ | http://localhost:8000 |
+| ログイン（Breeze標準） | http://localhost:8000/login |
+| ユーザー登録（Breeze標準） | http://localhost:8000/register |
+| Vite | http://localhost:5173 |
+| phpMyAdmin | http://localhost:8080（ホストはMySQLサービス。`.env`のDBユーザー・パスワードでログイン） |
+| Mailpit受信画面 | http://localhost:8025 |
+| アプリからのSMTP | `mailpit:1025` |
+| アプリからのDB | `mysql:3306` |
+
+ポート変更には`APP_PORT`・`VITE_PORT`・`FORWARD_PHPMYADMIN_PORT`・`FORWARD_MAILPIT_DASHBOARD_PORT`等を使用します。アプリのポートを変更したら`APP_URL`も合わせ、Viteのポートを変更したらViteの起動引数も合わせます。
+
+phpMyAdminはログイン画面を使用し、DBパスワードをComposeファイルへ固定しません。会社登録・所属会社の設定は、STEP 02でテーブルを作成してから行います。問い合わせフォームはSTEP 13で実装します。
+
+## 確認コマンド
+
+```bash
+./vendor/bin/sail php -v
+./vendor/bin/sail artisan --version
+./vendor/bin/sail artisan route:list
+./vendor/bin/sail npm run build
+./vendor/bin/sail artisan test --compact
+```
+
+自動テストは`phpunit.xml`で専用の`testing`データベースを指定しています。SailのMySQL初回作成時にテスト用DBが作成されます。既存ボリュームにない場合は、テストDBだけを別途用意してください。開発DBに対してテストのDB初期化を実行しないでください。
+
+## PHPバージョンの固定
+
+`docker/8.5/`はSail 1.69.0のランタイムを基に配置しています。DockerfileでPHP本体に対応するAPTパッケージ版を指定し、ビルド時に`PHP_VERSION === "8.5.12"`を確認します。Sailの更新だけでこのDockerfileは置き換わりません。
+
+配布元から指定パッケージ版が取得できなくなった場合、ビルドは失敗します。別バージョンへ自動的に切り替えず、指定条件を確認してください。ビルド済みイメージの保存も長期再現性のための選択肢です。
+
+## Git
+
+Laravelセットアップ後にGit設定済みです。`.env`・`vendor/`・`node_modules/`・ビルド成果物は管理対象外、`composer.lock`・`package-lock.json`は管理対象です。コミットはユーザーがSTEPごとに行います。
+
+仕様書・計画書は親フォルダーにあります。
+
+- `../CyTech_STEP9_アプリ仕様書.md`
+- `../CyTech_STEP9_アプリ作成計画書.md`
+
+## STEP 01の確認状況（2026-10-24）
+
+- 再構築前：ビルド成功、Breeze生成テスト25件成功（61 assertions）、Pint・Composer設定検証成功。
+- 再構築前：ログイン・登録・phpMyAdmin・MailpitがHTTP 200で応答。
+- PHPパッケージ版を指定したイメージのビルド成功。ビルド中にPHP 8.5.12を検証し、新コンテナの起動まで完了。
+- 再構築後のバージョン・ビルド・テスト・サービス状態、およびブラウザでのログイン・登録・phpMyAdmin・Mailpitの確認は、ユーザーからすべて問題なしとの報告を受けた。STEP 01は完了。
+- Gitコミットはユーザーが行う。
+
+## 参照資料
+
+- [Laravel Breeze](https://github.com/laravel/breeze)
+- [Tailwind CSS 4への移行](https://tailwindcss.com/docs/upgrade-guide)
+- [phpMyAdmin Docker設定](https://docs.phpmyadmin.net/en/latest/setup.html#installing-using-docker)
