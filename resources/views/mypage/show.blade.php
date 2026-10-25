@@ -6,8 +6,8 @@
                 <div class="content-panel__body">
                     <div class="mypage-section__header">
                         <h2 id="userInfoTitle" class="mypage-section__title">ユーザー情報</h2>
-                        <x-primary_button type="button" disabled>アカウント編集（準備中）</x-primary_button>
                     </div>
+                    <div class="mypage-section__account-action"><x-primary_button type="button" disabled>アカウント編集（準備中）</x-primary_button></div>
                     <dl class="user-info">
                         <div class="user-info__row"><dt class="user-info__label">ユーザー名</dt><dd class="user-info__value">{{ $user->name }}</dd></div>
                         <div class="user-info__row"><dt class="user-info__label">Eメール</dt><dd class="user-info__value">{{ $user->email }}</dd></div>

@@ -1,7 +1,7 @@
 <x-guest-layout>
     <h1 class="auth-page__title">ログイン</h1>
     <x-auth_session_status class="auth-page__status" :status="session('status')" />
-    <form method="POST" action="{{ route('login') }}">
+    <form class="auth-form" method="POST" action="{{ route('login') }}">
         @csrf
         <div>
             <x-input_label for="email" value="メールアドレス" />

@@ -7,9 +7,17 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="site-page">
+    <body class="site-page site-page--guest">
+        <nav class="guest-navigation" aria-label="認証ナビゲーション">
+            <div class="guest-navigation__container">
+                <a class="guest-navigation__brand" href="{{ route('home') }}">{{ config('app.name') }}</a>
+                <div class="guest-navigation__links">
+                    <a href="{{ route('login') }}">ログイン</a>
+                    <a href="{{ route('register') }}">新規登録</a>
+                </div>
+            </div>
+        </nav>
         <div class="guest-page">
-            <a class="guest-page__brand" href="{{ route('home') }}"><x-application_logo class="guest-page__logo" /></a>
             <main class="auth-panel">{{ $slot }}</main>
         </div>
     </body>

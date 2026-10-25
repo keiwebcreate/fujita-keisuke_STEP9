@@ -1,6 +1,6 @@
 <x-guest-layout>
     <h1 class="auth-page__title">新規ユーザー登録</h1>
-    <form method="POST" action="{{ route('register') }}">
+    <form class="auth-form" method="POST" action="{{ route('register') }}">
         @csrf
 
         <!-- Name -->
