@@ -9,6 +9,18 @@
             <x-input_error :messages="$errors->get('name')" class="form-field__errors" />
         </div>
 
+        <div class="form-field">
+            <x-input_label for="nameKanji" :value="__('名前（漢字）')" />
+            <x-text_input id="nameKanji" type="text" name="name_kanji" :value="old('name_kanji')" required maxlength="255" />
+            <x-input_error :messages="$errors->get('name_kanji')" />
+        </div>
+
+        <div class="form-field">
+            <x-input_label for="nameKana" :value="__('名前（カナ）')" />
+            <x-text_input id="nameKana" type="text" name="name_kana" :value="old('name_kana')" required maxlength="255" />
+            <x-input_error :messages="$errors->get('name_kana')" />
+        </div>
+
         <!-- Email Address -->
         <div class="form-field">
             <x-input_label for="email" :value="__('Email')" />

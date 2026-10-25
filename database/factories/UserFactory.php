@@ -26,6 +26,9 @@ class UserFactory extends Factory
     {
         return [
             'name' => fake()->name(),
+            'name_kanji' => '山田太郎',
+            'name_kana' => 'ヤマダタロウ',
+            'company_id' => null,
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
@@ -41,5 +44,15 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    public function withCompany(): static
+    {
+        return $this->for(CompanyFactory::new(), 'company');
+    }
+
+    public function withoutKana(): static
+    {
+        return $this->state(fn (array $attributes): array => ['name_kana' => null]);
     }
 }

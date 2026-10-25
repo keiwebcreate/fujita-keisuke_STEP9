@@ -8,12 +8,14 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'name_kanji', 'name_kana', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -31,6 +33,30 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /** @return BelongsTo<Company, $this> */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /** @return HasMany<Product, $this> */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    /** @return HasMany<Sale, $this> */
+    public function sales(): HasMany
+    {
+        return $this->hasMany(Sale::class);
+    }
+
+    /** @return HasMany<Like, $this> */
+    public function likes(): HasMany
+    {
+        return $this->hasMany(Like::class);
     }
 
     /** @param array<string, mixed> $validated_data */
