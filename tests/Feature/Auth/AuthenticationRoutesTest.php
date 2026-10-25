@@ -23,7 +23,7 @@ class AuthenticationRoutesTest extends TestCase
         $user = User::factory()->unverified()->create(['name' => '表示名<script>alert(1)</script>']);
 
         $this->actingAs($user)->get(route('products.index'))->assertOk()
-            ->assertSee('商品一覧')->assertSee('準備中')
+            ->assertSee('商品一覧')->assertSee('商品はありません')
             ->assertSee($user->name)->assertDontSee($user->name, false);
     }
 

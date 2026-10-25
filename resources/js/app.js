@@ -16,7 +16,7 @@ function initializeNavigation() {
                 toggle_button.focus();
             }
         });
-        window.matchMedia('(min-width: 640px)').addEventListener('change', closeNavigation);
+        window.matchMedia('(min-width: 960px)').addEventListener('change', closeNavigation);
     });
 }
 
