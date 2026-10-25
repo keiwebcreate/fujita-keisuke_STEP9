@@ -47,7 +47,7 @@ class ProductListingTest extends TestCase
         $this->assertMatchesRegularExpression('/\Aproducts\/[A-Za-z0-9]+\.png\z/', $product->img_path);
         Storage::disk('public')->assertExists($product->img_path);
         $this->get(route('mypage.show'))->assertSee('商品を登録しました。')->assertSee(route('listed_products.show', $product->id), false);
-        $this->get(route('listed_products.show', $product->id))->assertOk()->assertSee('タブレット ABC123')->assertSee('/storage/'.$product->img_path, false)->assertSee('編集（準備中）')->assertSee('削除する（準備中）');
+        $this->get(route('listed_products.show', $product->id))->assertOk()->assertSee('タブレット ABC123')->assertSee('/storage/'.$product->img_path, false)->assertSee(route('listed_products.edit', $product->id), false)->assertSee('削除する');
     }
 
     public function test_user_without_company_is_informed_and_cannot_register(): void

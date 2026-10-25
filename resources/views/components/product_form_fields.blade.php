@@ -21,10 +21,12 @@
 </div>
 <div class="form-field">
     <x-input_label for="productImage" :value="$imageRequired ? '商品画像（必須）' : '商品画像'" />
-    @if ($product)
-        <x-product_image :path="$product->img_path" :name="$product->product_name" />
-    @endif
-    <input id="productImage" name="image" type="file" class="product-form__file" accept="image/jpeg,image/png,image/webp" @required($imageRequired) aria-describedby="productImageHelp">
-    <p id="productImageHelp" class="product-form__help">JPEG・PNG・WebP、2MiB以下。入力エラー時は画像を再選択してください。</p>
+    <div @class(['product-form__image-row' => $product !== null])>
+        @if ($product)
+            <x-product_image :path="$product->img_path" :name="$product->product_name" compact />
+        @endif
+        <input id="productImage" name="image" type="file" class="product-form__file" accept="image/jpeg,image/png,image/webp" @required($imageRequired) aria-describedby="productImageHelp">
+    </div>
+    <p id="productImageHelp" class="product-form__help">JPEG・PNG・WebP、2MiB以下。{{ $imageRequired ? '入力エラー時は画像を再選択してください。' : '未選択なら現在の画像を保持します。入力エラー時は新しい画像を再選択してください。' }}</p>
     <x-input_error :messages="$errors->get('image')" />
 </div>
