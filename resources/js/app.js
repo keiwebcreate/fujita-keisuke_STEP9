@@ -1,3 +1,4 @@
+import { initializeProductFavorites } from './product_favorites';
 import { initializeProductSearch } from './product_search';
 
 function initializeNavigation() {
@@ -94,3 +95,5 @@ document.querySelectorAll('[data-auto-dismiss]').forEach((message) => {
 });
 
 initializeProductSearch();
+
+initializeProductFavorites();

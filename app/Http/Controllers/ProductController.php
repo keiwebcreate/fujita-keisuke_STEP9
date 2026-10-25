@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SearchProductRequest;
+use App\Models\Like;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -23,8 +25,13 @@ class ProductController extends Controller
         return view('products.index', ['products' => $products, 'filters' => $filters]);
     }
 
-    public function show(string $product_id): View
+    public function show(Request $request, string $product_id): View
     {
-        return view('products.show', ['product' => Product::getProductDetail($product_id)]);
+        $product = Product::getProductDetail($product_id);
+
+        return view('products.show', [
+            'product' => $product,
+            'liked' => Like::isRegisteredForProduct($request->user()->id, $product->id),
+        ]);
     }
 }

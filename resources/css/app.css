@@ -205,3 +205,9 @@ button:disabled, input:disabled { cursor: not-allowed; opacity: .5; }
     .product-search__field--name { flex: 1 0 100%; }
     .product-search__field:not(.product-search__field--name) { flex: 1 1 8rem; }
 }
+.product-favorite { margin-top: .5rem; }
+.favorite-button { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; min-width: 2.75rem; min-height: 2.75rem; padding: .375rem; border: 0; border-radius: .25rem; background: transparent; }
+.favorite-button__icon { display: block; width: 1.75rem; height: 1.75rem; overflow: visible; fill: white; stroke: #dc2626; stroke-width: 1.5; stroke-linejoin: round; }
+.favorite-button--active .favorite-button__icon { fill: #dc2626; }
+.product-favorite__status { font-size: .875rem; color: var(--color-muted); }
+.product-favorite__error { color: var(--color-danger); font-size: .875rem; }

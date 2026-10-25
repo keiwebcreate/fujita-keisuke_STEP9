@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LikeController;
 use App\Http\Controllers\ListedProductController;
 use App\Http\Controllers\MyPageController;
 use App\Http\Controllers\ProductController;
@@ -24,6 +25,10 @@ Route::middleware('auth')->group(function (): void {
         ->whereNumber('product_id')->name('listed_products.update');
     Route::delete('/mypage/products/{product_id}', [ListedProductController::class, 'destroy'])
         ->whereNumber('product_id')->name('listed_products.destroy');
+    Route::put('/products/{product_id}/like', [LikeController::class, 'store'])
+        ->whereNumber('product_id')->name('products.like.store');
+    Route::delete('/products/{product_id}/like', [LikeController::class, 'destroy'])
+        ->whereNumber('product_id')->name('products.like.destroy');
     Route::get('/products/{product_id}', [ProductController::class, 'show'])
         ->whereNumber('product_id')->name('products.show');
 });

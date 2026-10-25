@@ -55,7 +55,7 @@ class ProductBrowsingTest extends TestCase
         $response->assertOk()->assertSee('タブレット')->assertSee('持ち運び用です。')
             ->assertSee('軽量です。')->assertSee('¥123,456')->assertSee('商品に設定された会社')
             ->assertSee(route('products.index'), false)->assertSee('戻る')
-            ->assertSee('お気に入り・購入機能は準備中です。');
+            ->assertSee('購入機能は準備中です。');
     }
 
     public function test_owners_can_view_their_own_product_detail(): void
