@@ -7,11 +7,12 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="site-page">
-        @include('layouts.navigation')
+    <body class="site-page site-page--authenticated">
+        <x-site_header :user-name="auth()->user()->name" />
         @isset($header)
             <header class="page-header"><div class="page-header__container">{{ $header }}</div></header>
         @endisset
-        <main>{{ $slot }}</main>
+        <main class="site-page__main">{{ $slot }}</main>
+        <x-site_footer />
     </body>
 </html>
