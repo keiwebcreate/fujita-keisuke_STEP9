@@ -18,6 +18,12 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/products', [ListedProductController::class, 'store'])->name('products.store');
     Route::get('/mypage/products/{product_id}', [ListedProductController::class, 'show'])
         ->whereNumber('product_id')->name('listed_products.show');
+    Route::get('/mypage/products/{product_id}/edit', [ListedProductController::class, 'edit'])
+        ->whereNumber('product_id')->name('listed_products.edit');
+    Route::patch('/mypage/products/{product_id}', [ListedProductController::class, 'update'])
+        ->whereNumber('product_id')->name('listed_products.update');
+    Route::delete('/mypage/products/{product_id}', [ListedProductController::class, 'destroy'])
+        ->whereNumber('product_id')->name('listed_products.destroy');
     Route::get('/products/{product_id}', [ProductController::class, 'show'])
         ->whereNumber('product_id')->name('products.show');
 });

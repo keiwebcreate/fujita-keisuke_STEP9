@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 #[Fillable(['user_id', 'company_id', 'product_name', 'price', 'stock', 'description', 'img_path'])]
 class Product extends Model
@@ -40,6 +42,49 @@ class Product extends Model
             'company_id' => $user->company_id,
             'img_path' => $image_path,
         ]);
+    }
+
+    public static function getOwnedProductDetail(string $product_id, int $user_id): self
+    {
+        $product = self::getProductDetail($product_id);
+        abort_unless($product->user_id === $user_id, 403);
+
+        return $product;
+    }
+
+    /** @param array<string, mixed> $validated_data */
+    public function updateForOwner(int $user_id, array $validated_data, ?string $image_path): ?string
+    {
+        return DB::transaction(function () use ($user_id, $validated_data, $image_path): ?string {
+            $product = self::query()->lockForUpdate()->findOrFail($this->id);
+            abort_unless($product->user_id === $user_id, 403);
+            $old_image_path = $product->img_path;
+            $product->fill([
+                'product_name' => $validated_data['product_name'],
+                'description' => $validated_data['description'],
+                'price' => $validated_data['price'],
+                'stock' => $validated_data['stock'],
+            ]);
+            if ($image_path !== null) {
+                $product->img_path = $image_path;
+            }
+            if (! $product->save()) {
+                throw new RuntimeException('商品を更新できませんでした。');
+            }
+
+            return $image_path !== null ? $old_image_path : null;
+        });
+    }
+
+    public function deleteForOwner(int $user_id): void
+    {
+        DB::transaction(function () use ($user_id): void {
+            $product = self::query()->lockForUpdate()->findOrFail($this->id);
+            abort_unless($product->user_id === $user_id, 403);
+            if (! $product->delete()) {
+                throw new RuntimeException('商品を削除できませんでした。');
+            }
+        });
     }
 
     /** @return BelongsTo<User, $this> */
