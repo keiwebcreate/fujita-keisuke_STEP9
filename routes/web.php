@@ -4,6 +4,7 @@ use App\Http\Controllers\LikeController;
 use App\Http\Controllers\ListedProductController;
 use App\Http\Controllers\MyPageController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PurchaseController;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,10 @@ Route::middleware('auth')->group(function (): void {
         ->whereNumber('product_id')->name('products.like.store');
     Route::delete('/products/{product_id}/like', [LikeController::class, 'destroy'])
         ->whereNumber('product_id')->name('products.like.destroy');
+    Route::get('/products/{product_id}/purchase', [PurchaseController::class, 'create'])
+        ->whereNumber('product_id')->name('purchases.create');
+    Route::post('/products/{product_id}/purchases', [PurchaseController::class, 'store'])
+        ->whereNumber('product_id')->name('purchases.store');
     Route::get('/products/{product_id}', [ProductController::class, 'show'])
         ->whereNumber('product_id')->name('products.show');
 });

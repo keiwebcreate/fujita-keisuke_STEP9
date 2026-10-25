@@ -211,3 +211,4 @@ button:disabled, input:disabled { cursor: not-allowed; opacity: .5; }
 .favorite-button--active .favorite-button__icon { fill: #dc2626; }
 .product-favorite__status { font-size: .875rem; color: var(--color-muted); }
 .product-favorite__error { color: var(--color-danger); font-size: .875rem; }
+.purchase-form__quantity { max-width: 7rem; }

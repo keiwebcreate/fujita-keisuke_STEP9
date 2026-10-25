@@ -15,9 +15,15 @@
                         <span id="favoriteStatus" class="product-favorite__status" data-favorite-status role="status" aria-live="polite">{{ $liked ? 'お気に入り登録済み' : 'お気に入り未登録' }}</span>
                         <p class="product-favorite__error" data-favorite-error role="alert" hidden></p>
                     </div>
-                    <p class="product-detail__notice">購入機能は準備中です。</p>
+                    @if ($product->user_id === auth()->id())
+                        <p class="product-detail__notice">自分の商品は購入できません。</p>
+                    @endif
                     <div class="form-actions">
-                        <x-primary_button type="button" disabled>カートに追加する</x-primary_button>
+                        @if ($product->user_id !== auth()->id() && $product->stock > 0)
+                            <x-action_link :href="route('purchases.create', $product->id)">カートに追加する</x-action_link>
+                        @else
+                            <x-primary_button type="button" disabled>カートに追加する</x-primary_button>
+                        @endif
                         <x-action_link :href="route('products.index')" variant="secondary">戻る</x-action_link>
                     </div>
                 </div>

@@ -45,6 +45,14 @@ class Product extends Model
         return self::query()->with('company')->findOrFail($product_id);
     }
 
+    public static function getPurchasableProduct(string $product_id, int $buyer_id): self
+    {
+        $product = self::getProductDetail($product_id);
+        abort_if($product->user_id === $buyer_id, 403, '自分の商品は購入できません。');
+
+        return $product;
+    }
+
     /** @param array<string, mixed> $validated_data */
     public static function registerProduct(User $user, array $validated_data, string $image_path): self
     {
