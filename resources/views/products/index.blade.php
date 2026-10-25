@@ -4,30 +4,30 @@
         <div class="page-content__container">
             <section class="content-panel" aria-label="商品一覧">
                 <div class="content-panel__body">
-                    @if ($products->isEmpty())
-                        <p class="empty-message" role="status">表示できる商品はありません。</p>
-                    @else
-                        <div class="product-table__scroll" role="region" aria-label="商品一覧の表" tabindex="0">
-                            <table class="product-table">
-                                <caption class="product-table__caption">出品商品の一覧</caption>
-                                <thead><tr>
-                                    <th scope="col">商品番号</th><th scope="col">商品名</th><th scope="col">商品説明</th><th scope="col">画像</th><th scope="col">料金（¥）</th><th scope="col">操作</th>
-                                </tr></thead>
-                                <tbody>
-                                    @foreach ($products as $product)
-                                        <tr>
-                                            <td>{{ $product->id }}</td>
-                                            <td class="product-table__name">{{ $product->product_name }}</td>
-                                            <td class="product-table__description">{{ $product->description }}</td>
-                                            <td><x-product_image :path="$product->img_path" :name="$product->product_name" compact /></td>
-                                            <td class="product-table__price"><x-product_price :price="$product->price" /></td>
-                                            <td><x-action_link :href="route('products.show', $product->id)" variant="detail" :aria-label="$product->product_name.'の詳細'">詳細</x-action_link></td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                    <form method="GET" action="{{ route('products.index') }}" class="product-search" data-product-search>
+                        <div class="product-search__field product-search__field--name">
+                            <x-input_label for="searchProductName" value="商品名" class="form-field__label--visually-hidden" />
+                            <x-text_input id="searchProductName" name="product_name" type="text" :value="old('product_name', $filters['product_name'] ?? '')" placeholder="商品名を入力" maxlength="255" aria-describedby="searchProductNameErrors" />
+                            <ul id="searchProductNameErrors" class="form-field__errors" data-search-errors="product_name">@foreach ($errors->get('product_name') as $message)<li>{{ $message }}</li>@endforeach</ul>
                         </div>
-                    @endif
+                        <div class="product-search__field">
+                            <x-input_label for="searchMinPrice" value="最低価格" class="form-field__label--visually-hidden" />
+                            <x-text_input id="searchMinPrice" name="min_price" type="text" inputmode="numeric" :value="old('min_price', $filters['min_price'] ?? '')" placeholder="最低価格" aria-describedby="searchMinPriceErrors" />
+                            <ul id="searchMinPriceErrors" class="form-field__errors" data-search-errors="min_price">@foreach ($errors->get('min_price') as $message)<li>{{ $message }}</li>@endforeach</ul>
+                        </div>
+                        <span class="product-search__separator" aria-hidden="true">〜</span>
+                        <div class="product-search__field">
+                            <x-input_label for="searchMaxPrice" value="最高価格" class="form-field__label--visually-hidden" />
+                            <x-text_input id="searchMaxPrice" name="max_price" type="text" inputmode="numeric" :value="old('max_price', $filters['max_price'] ?? '')" placeholder="最高価格" aria-describedby="searchMaxPriceErrors" />
+                            <ul id="searchMaxPriceErrors" class="form-field__errors" data-search-errors="max_price">@foreach ($errors->get('max_price') as $message)<li>{{ $message }}</li>@endforeach</ul>
+                        </div>
+                        <x-primary_button class="product-search__button">検索</x-primary_button>
+                    </form>
+                    <p class="product-search__status" data-search-status role="status" aria-live="polite"></p>
+                    <p class="product-search__error" data-search-error role="alert" hidden></p>
+                    <div data-search-results aria-busy="false">
+                        @include('products.product_list')
+                    </div>
                 </div>
             </section>
         </div>

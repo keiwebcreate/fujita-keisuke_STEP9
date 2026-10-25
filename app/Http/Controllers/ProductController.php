@@ -2,17 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SearchProductRequest;
 use App\Models\Product;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    public function index(Request $request): View
+    public function index(SearchProductRequest $request): View|JsonResponse
     {
-        return view('products.index', [
-            'products' => Product::getListedProductsForUser($request->user()->id),
-        ]);
+        $filters = $request->validated();
+        $products = Product::getListedProductsForUser($request->user()->id, $filters);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'html' => view('products.product_list', ['products' => $products])->render(),
+                'count' => $products->count(),
+            ]);
+        }
+
+        return view('products.index', ['products' => $products, 'filters' => $filters]);
     }
 
     public function show(string $product_id): View

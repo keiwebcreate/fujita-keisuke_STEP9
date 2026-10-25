@@ -1,3 +1,5 @@
+import { initializeProductSearch } from './product_search';
+
 function initializeNavigation() {
     document.querySelectorAll('[data-navigation]').forEach((navigation) => {
         const toggle_button = navigation.querySelector('[data-navigation-toggle]');
@@ -90,3 +92,5 @@ initializeModals();
 document.querySelectorAll('[data-auto-dismiss]').forEach((message) => {
     window.setTimeout(() => { message.hidden = true; }, Number(message.dataset.autoDismiss));
 });
+
+initializeProductSearch();
