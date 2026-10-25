@@ -28,6 +28,20 @@ class Product extends Model
         return self::query()->with('company')->findOrFail($product_id);
     }
 
+    /** @param array<string, mixed> $validated_data */
+    public static function registerProduct(User $user, array $validated_data, string $image_path): self
+    {
+        return self::create([
+            'product_name' => $validated_data['product_name'],
+            'description' => $validated_data['description'],
+            'price' => $validated_data['price'],
+            'stock' => $validated_data['stock'],
+            'user_id' => $user->id,
+            'company_id' => $user->company_id,
+            'img_path' => $image_path,
+        ]);
+    }
+
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
