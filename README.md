@@ -1,339 +1,124 @@
-# Cytech EC — 開発環境・DB基盤・商品閲覧
+# Cytech EC
 
-実装先：`/home/keisuke/CyTech_STEP9/cytech_STEP9_app`
+商品を出品・検索・購入する学習用ECアプリです。11画面、非同期検索、お気に入り、画像付き商品管理、購入履歴、アカウント編集、お問い合わせ、Bearer認証の購入APIを実装しています。
 
-## 構成
+**提出前の残項目：Postmanアプリでの実機確認。** 自動テスト・HTTP検証の成功と区別して記録しています。確認項目と結果は[全体確認記録](docs/verification.md)、過去の工程別記録は[開発履歴](docs/development_history.md)を参照してください。
 
-- PHP 8.5.12 / Laravel 13 / Laravel Sail
-- Laravel Breeze 2.4.2（Blade・PHPUnit）
-- Vite 8 / BEM形式の外部CSS / 外部JavaScript（メニュー・モーダル等）
-- MySQL 8.4 / phpMyAdmin / Mailpit
-- Laravel Boost（AGENTS.mdの指定に従った開発用パッケージ）
+## 環境
 
-STEP 13のお問い合わせまで実装済みです。STEP 11のPostman実機確認は引き続き確認待ちです。登録後は自動ログインせずログイン画面へ、ログイン後は商品一覧へ、ログアウト後はログイン画面へ遷移します。商品一覧・詳細・マイページ・共通ヘッダー／フッターが利用できます。商品登録・本人限定の出品詳細・編集・論理削除が利用できます。商品名・価格による非同期検索も利用できます。お気に入りの登録・解除も利用できます。数量を指定した確認モーダル付き購入も利用できます。
+PHP 8.5.12、Laravel 13.38.0、Laravel Sail、Breeze 2.4.2（Blade）、Sanctum 4.3.3、MySQL 8.4、Vite 8、phpMyAdmin、Mailpit。実装先は`/home/keisuke/CyTech_STEP9/cytech_STEP9_app`です。依存パッケージは`composer.lock`・`package-lock.json`で管理します。
 
-コーディング規約への対応として、生成画面のTailwindクラスを通常CSSへ置き換え、Viewファイル名をスネークケース、HTMLのclassをBEM、IDをローワーキャメルへ統一しています。画面操作は外部JavaScript、入力検証はForm Request、DB保存はUserモデルへ配置します。
+PHPのDockerランタイムは`docker/8.5/`に配置し、DockerfileでPHPパッケージ版を指定してビルド時に8.5.12を検証します。指定パッケージが配布元から取得できなくなった場合、別バージョンへ自動変更せずビルドが失敗します。
 
 ## 初回セットアップ
 
-Docker EngineとDocker Composeを起動しておきます。以下はプロジェクトルートで実行します。既存の`.env`は上書きせず、初回のみコピーしてください。
+Docker EngineとDocker Composeを起動し、以下をプロジェクトルートで実行してください。既存の`.env`は上書きせず、初回だけコピーします。
 
 ```bash
 cd /home/keisuke/CyTech_STEP9/cytech_STEP9_app
 cp .env.example .env
 ```
 
-`.env`の`WWWUSER`・`WWWGROUP`はホスト側の`id -u`・`id -g`に合わせます。DBの初期パスワードは開発用です。変更する場合はDBの初回起動前に設定してください。既存DBボリュームがある場合、環境変数を変えるだけではDB内の認証情報は変わりません。
+`.env`の`WWWUSER`・`WWWGROUP`をホストの`id -u`・`id -g`に合わせます。ポート競合がある場合は初回起動前に変更してください。DBパスワードは開発用の初期値です。既存DBボリュームがある場合、環境変数を変えるだけではDB側の認証情報は変わりません。
 
-ホストにPHP・Composerがない場合、依存パッケージを初回だけコンテナから導入できます。
+ホストにPHP・Composerがない場合は、初回の依存導入にComposerコンテナを使用できます。
 
 ```bash
 docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/var/www/html" -w /var/www/html laravelsail/php85-composer:latest composer install --no-interaction
 ```
 
-その後、Sailで起動します。
+ホストのPHP・Composerを使用する場合は`composer install --no-interaction`を実行します。その後、Sailでセットアップします。
 
 ```bash
 ./vendor/bin/sail build
 ./vendor/bin/sail up -d
 ./vendor/bin/sail artisan key:generate
 ./vendor/bin/sail artisan migrate
+./vendor/bin/sail artisan storage:link
 ./vendor/bin/sail npm ci
 ./vendor/bin/sail npm run build
 ```
 
-`migrate`は既存データを削除しない通常の適用です。`migrate:fresh`や`down -v`は通常の起動には使いません。
+`migrate`は通常の差分適用です。`migrate:fresh`や`down -v`は開発データを消すため、通常の起動には使いません。既存ユーザーに漢字名がない旧DBへプロフィール項目を追加する場合、マイグレーションは名前を勝手に補完せず停止します。既存データの移行方針を決めて対応してください。
 
-## 日常の起動・停止
+登録済みユーザーやサンプル商品は自動投入しません。ブラウザからユーザー登録し、出品者の会社を設定してください。
 
-```bash
-./vendor/bin/sail up -d
-./vendor/bin/sail npm run dev
-```
+## 起動・接続先
 
-Viteは起動したターミナルを使用します。停止はCtrl+C。Viteを使わず確認する場合は`./vendor/bin/sail npm run build`を実行します。
+日常の起動は`./vendor/bin/sail up -d`、停止は`./vendor/bin/sail down`です。フロントエンド開発時は`./vendor/bin/sail npm run dev`を別ターミナルで起動し、Ctrl+Cで停止します。通常の確認はビルド済みアセットで行えます。
 
-```bash
-./vendor/bin/sail down
-```
-
-## 接続先
-
-`.env.example`のポート設定での接続先です。既存`.env`で変更している場合はそちらを優先します。
-
-| 用途 | URL・設定 |
+| 用途 | `.env.example`での接続先 |
 |---|---|
-| アプリ | http://localhost:8000 |
-| ログイン | http://localhost:8000/login |
+| アプリ・ログイン | http://localhost:8000/login |
 | ユーザー登録 | http://localhost:8000/register |
-| 商品一覧（ログイン必須） | http://localhost:8000/products |
-| マイページ（ログイン必須） | http://localhost:8000/mypage |
+| 商品一覧・マイページ | `/products`・`/mypage`（ログイン必須） |
+| アカウント編集・お問い合わせ | `/account/edit`・`/contact`（ログイン必須） |
+| phpMyAdmin | http://localhost:8080 |
+| Mailpit | http://localhost:8025 |
 | Vite | http://localhost:5173 |
-| phpMyAdmin | http://localhost:8080（ホストはMySQLサービス。`.env`のDBユーザー・パスワードでログイン） |
-| Mailpit受信画面 | http://localhost:8025 |
-| アプリからのSMTP | `mailpit:1025` |
-| アプリからのDB | `mysql:3306` |
+| コンテナからのDB・SMTP | `mysql:3306`・`mailpit:1025` |
 
-ポート変更には`APP_PORT`・`VITE_PORT`・`FORWARD_PHPMYADMIN_PORT`・`FORWARD_MAILPIT_DASHBOARD_PORT`等を使用します。アプリのポートを変更したら`APP_URL`も合わせ、Viteのポートを変更したらViteの起動引数も合わせます。
+ポートは`APP_PORT`・`VITE_PORT`・`FORWARD_DB_PORT`・`FORWARD_PHPMYADMIN_PORT`・`FORWARD_MAILPIT_PORT`・`FORWARD_MAILPIT_DASHBOARD_PORT`で変更します。アプリのポート変更時は`APP_URL`も合わせ、Viteの変更時は起動引数も合わせてください。設定変更後、キャッシュがある場合は`./vendor/bin/sail artisan config:clear`を実行します。
 
-phpMyAdminはログイン画面を使用し、DBパスワードをComposeファイルへ固定しません。会社登録・所属会社の設定方法は下記のSTEP 02の手順を参照してください。問い合わせフォームはSTEP 13で実装します。
+## 会社登録・所属会社の設定
 
-## 確認コマンド
-
-```bash
-./vendor/bin/sail php -v
-./vendor/bin/sail artisan --version
-./vendor/bin/sail artisan route:list
-./vendor/bin/sail npm run build
-./vendor/bin/sail artisan test --compact
-```
-
-自動テストは`phpunit.xml`で専用の`testing`データベースを指定しています。SailのMySQL初回作成時にテスト用DBが作成されます。既存ボリュームにない場合は、テストDBだけを別途用意してください。開発DBに対してテストのDB初期化を実行しないでください。
-
-## PHPバージョンの固定
-
-`docker/8.5/`はSail 1.69.0のランタイムを基に配置しています。DockerfileでPHP本体に対応するAPTパッケージ版を指定し、ビルド時に`PHP_VERSION === "8.5.12"`を確認します。Sailの更新だけでこのDockerfileは置き換わりません。
-
-配布元から指定パッケージ版が取得できなくなった場合、ビルドは失敗します。別バージョンへ自動的に切り替えず、指定条件を確認してください。ビルド済みイメージの保存も長期再現性のための選択肢です。
-
-## Git
-
-Laravelセットアップ後にGit設定済みです。`.env`・`vendor/`・`node_modules/`・ビルド成果物は管理対象外、`composer.lock`・`package-lock.json`は管理対象です。コミットはユーザーがSTEPごとに行います。
-
-仕様書・計画書は親フォルダーにあります。
-
-- `../CyTech_STEP9_アプリ仕様書.md`
-- `../CyTech_STEP9_アプリ作成計画書.md`
-
-## STEP 01の確認状況（2026-10-24）
-
-- 再構築前：ビルド成功、Breeze生成テスト25件成功（61 assertions）、Pint・Composer設定検証成功。
-- 再構築前：ログイン・登録・phpMyAdmin・MailpitがHTTP 200で応答。
-- PHPパッケージ版を指定したイメージのビルド成功。ビルド中にPHP 8.5.12を検証し、新コンテナの起動まで完了。
-- 再構築後のバージョン・ビルド・テスト・サービス状態、およびブラウザでのログイン・登録・phpMyAdmin・Mailpitの確認は、ユーザーからすべて問題なしとの報告を受けた。STEP 01は完了。
-- Gitコミットはユーザーが行う。
-
-## 参照資料
-
-- [Laravel Breeze](https://github.com/laravel/breeze)
-- [phpMyAdmin Docker設定](https://docs.phpmyadmin.net/en/latest/setup.html#installing-using-docker)
-
-## コーディング規約への対応確認（2026-10-25）
-
-- Tailwind CSS・Alpine.jsの依存を削除し、外部の通常CSS・JavaScriptへ移行。
-- Breeze生成Viewも含めてBEMクラス・ローワーキャメルのID・スネークケースのViewファイル名へ統一。
-- 既存Controllerの入力検証をForm Requestへ移し、ユーザーの登録・更新・削除・パスワード保存をUserモデルへ集約。
-- ビルド・Pint・既存の25テスト（61 assertions）に成功。
-- Chromiumで認証画面、登録・ログイン・ログアウト、プロフィール更新、デスクトップのドロップダウン、モバイルメニュー、モーダルのフォーカス・キャンセル・Esc・入力エラー後の再表示・確定処理を確認。アプリ側のクラス名・ID・ラベルの対応も確認。
-- ブラウザ確認は専用の`testing`データベースを使用。開発用DBのユーザーデータは変更していない。
-- コミットはユーザーが行う。
-
-## STEP 02：DB・Modelの基盤（2026-10-25）
-
-### 追加内容
-
-- `companies`・`products`・`sales`・`likes`を追加し、既存の`users`に`name_kanji`・`name_kana`・`company_id`を追加。
-- `name_kanji`はDBでNULL不可、`name_kana`・`company_id`はNULL可。登録フォームでは漢字名・カナ名とも必須。
-- 商品は`deleted_at`による論理削除。通常の関連取得では非表示とし、`Sale::product()`は削除済み商品も参照。
-- 購入履歴の商品名・説明・価格は現在の商品データを参照。購入時点の情報保存用カラムは追加していない。
-- お気に入りはユーザーと商品の組み合わせを一意とする。削除済み商品のお気に入り行は保持するが、通常の商品関連は取得できない。
-- 外部キーは参照先の物理削除を制限し、商品削除で購入履歴を連鎖削除しない。関連データがあるアカウントの物理削除もDBで制限される。
-- メールの一意制約は既存定義を維持。外部キー索引と購入履歴用の`user_id, created_at, id`索引を設定。
-- `sessions`・`password_reset_tokens`・キャッシュ・キュー関連はLaravelの補助テーブルとして維持。Sanctumはまだ追加していない。
-
-既存のユーザー作成マイグレーションを編集せず、追加マイグレーションで拡張しています。今回の開発DBには既存ユーザーがいないことを確認して適用しました。ユーザーが存在する別環境では、漢字名を勝手に補完しないよう追加処理を停止します。その場合は既存ユーザーの移行方針を決めてから対応してください。
-
-### 会社登録・所属会社の設定（phpMyAdmin）
-
-1. http://localhost:8080 にログインし、`.env`の`DB_DATABASE`に対応する開発用DBを選択する。
-2. SQLタブで会社を登録する。会社名は実際の値に置き換える。
+1. アプリで出品者と購入者を登録します。登録後は自動ログインせずログイン画面へ戻ります。
+2. phpMyAdminへ`.env`のDBユーザー・パスワードでログインし、`DB_DATABASE`に対応する開発DBを選びます。
+3. SQLタブで会社を登録し、IDを確認します。
 
 ```sql
 INSERT INTO companies (company_name, created_at, updated_at)
 VALUES ('株式会社サンプル', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-
 SELECT id, company_name FROM companies ORDER BY id ASC;
-```
-
-3. アプリの登録画面でユーザーを登録する。会社選択欄は設けておらず、登録時の`company_id`はNULLとなる。
-4. phpMyAdminで会社ID・対象ユーザーIDを確認する。
-
-```sql
 SELECT id, name, email, company_id FROM users ORDER BY id ASC;
 ```
 
-5. 次の例の`1`（会社ID）・`2`（ユーザーID）を、確認した実際のIDへ置き換えて実行する。
+4. 実際の会社ID・出品者IDに置換して所属会社を設定します。
 
 ```sql
-UPDATE users
-SET company_id = 1, updated_at = CURRENT_TIMESTAMP
-WHERE id = 2;
-
+UPDATE users SET company_id = 1, updated_at = CURRENT_TIMESTAMP WHERE id = 2;
 SELECT users.id, users.name, users.company_id, companies.company_name
-FROM users
-LEFT JOIN companies ON companies.id = users.company_id
-WHERE users.id = 2;
+FROM users LEFT JOIN companies ON companies.id = users.company_id WHERE users.id = 2;
 ```
 
-会社データやサンプルユーザーは、今回の開発DBには自動登録していません。会社の登録と所属会社設定は原資料に従って手動で行います。
+会社未設定のユーザーは出品できません。購入者は会社未設定でも購入できます。会社管理画面はありません。
 
-### 検証用データ
+## 主な操作と仕様
 
-Factoryはテスト内で必要なときに使用します。次の例は、専用テストDBでの検証を想定したPHPコードです。
+- ログイン後は商品一覧、ログアウト後はログイン画面へ移動します。認証画面以外の9画面はログイン必須です。
+- 出品者はマイページから商品登録・詳細・編集・削除を操作します。商品入力は登録・編集で共通化し、他人の編集・更新・削除を拒否します。
+- 一覧は自分以外の未削除商品を商品番号昇順で表示します。商品名の部分一致・最低価格・最高価格はAND条件で検索し、価格境界を含みます。片側指定と空条件に対応し、画面全体を再読み込みせず結果を反映します。
+- 商品詳細のハートは未登録が白、登録済みが赤です。状態文言も表示し、再表示しても本人の状態を保持します。
+- 他人の商品を数量指定で購入し、確認モーダルで確定すると購入記録を作成して在庫を減らします。成功後は商品一覧へ戻ります。売切れ・在庫超過・自分の商品は購入できません。
+- 商品削除は確認後に論理削除します。画像・購入記録は保持し、購入履歴は削除済み商品も参照します。履歴の名前・説明・価格は現在の商品情報です。購入日は昇順、同日時は購入ID昇順です。
+- アカウント編集は本人のユーザー名・メール・漢字名・カナ名だけを更新し、更新後はマイページへ戻ります。本人のメール据え置きは可能です。
 
-```php
-$company = Company::factory()->create();
-$seller = User::factory()->for($company)->create();
-$buyer = User::factory()->create();
-$product = Product::factory()->for($seller)->create();
-$sold_out_product = Product::factory()->for($seller)->soldOut()->create();
-$deleted_product = Product::factory()->for($seller)->deleted()->create();
-$sale = Sale::factory()->for($buyer)->for($deleted_product)->create();
-$like = Like::factory()->for($buyer)->for($product)->create();
+価格・在庫は0〜2147483647、購入数量は1〜2147483647の整数です。商品名・説明・アカウント項目は255文字以内。名前・カナ等の許可文字は各Form Requestで定義しています。パスワードは半角英数字8〜72文字・確認一致です。
+
+画像はJPEG・PNG・WebP、最大2MiB。公開ストレージの`products/`へ生成ファイル名で保存します。編集時に画像未選択なら既存画像を保持し、DB更新成功後に旧画像を整理、失敗時は新規画像を清掃します。入力エラー時は画像を再選択してください。画像がない／不正なパスの場合は「画像なし」を表示します。
+
+## お問い合わせ・メール確認
+
+`/contact`で名前・メール（各255文字以内）・本文（2000文字以内）を入力します。送信成功時は商品一覧へ移動し、失敗時は入力を保持して案内します。問い合わせ保存用DBテーブルはありません。
+
+```dotenv
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_FROM_ADDRESS=hello@example.com
+MAIL_FROM_NAME="Cytech EC"
+CONTACT_TO_ADDRESS=admin@example.test
 ```
 
-各クラスは`App\Models`配下です。`User::factory()->withCompany()`で所属会社付きユーザー、`withoutKana()`でカナ名NULLの既存データ例を作成できます。`ProductFactory`は出品者の所属会社を商品に設定するため、指定する出品者には会社を関連付けてください。
+宛先は`CONTACT_TO_ADDRESS`（未設定時`admin@example.test`）、差出人はアプリ設定で固定します。入力メールはReply-Toです。Mailpitで宛先・From・Reply-To・件名・本文を確認してください。`MAIL_URL`は未設定とし、空文字の環境変数でSMTP設定を上書きしないでください。実在する管理者への外部配送は今回の範囲外です。
 
-Factoryの画像パスは検証用のダミー値で、画像ファイルは作成しません。また、購入記録のFactoryは購入処理そのものではなく、在庫を減算しません。在庫減算はSTEP 10で実装します。
+## 購入API・Postman
 
-### テストDBの保護と確認結果
+`POST /api/products/{product_id}/purchases`。`Authorization: Bearer <token>`、`Accept: application/json`、`Content-Type: application/json`を付けて`{"quantity": 1}`を送ります。セッションログインだけではAPIを利用できません。
 
-テスト設定で接続先をMySQLの`testing` DBへ固定し、アプリ起動時にもその設定を確認します。別の接続先やDB URLが設定されている場合は、DBを初期化する前にテストを停止します。
+成功は201で、`data`に`id`（購入記録ID）、`product_id`、`quantity`、`remaining_stock`を返します。401は未認証／無効・期限切れ・失効トークン、403は権限不足／自分の商品、404は存在しない／削除済み商品、422は数量不正、409は在庫不足です。画面とAPIは同じRequest・Modelの購入処理を使用します。
 
-- 専用MySQL `testing` DBでマイグレーション・5件分のロールバック・再適用に成功。
-- Modelの関連、論理削除後の購入履歴、現在の商品情報の参照、外部キー、物理削除制限、お気に入り重複防止を確認。
-- 漢字名・カナ名の保存・不正入力の拒否・会社IDの不正な送信の除外を確認。
-- 全51テスト（186 assertions）・Pint・フロントエンドビルドに成功。
-- 開発DBには通常の`migrate`で5件の追加マイグレーションを適用済み。開発DBの再作成やデータ投入は行っていない。
-- STEP 02時点では登録後の遷移を維持していたが、STEP 03で下記の仕様へ変更済み。
-
-## STEP 03：認証と画面遷移（2026-10-25）
-
-| 操作 | 結果 |
-|---|---|
-| ユーザー登録 | 漢字名・カナ名等を保存し、自動ログインせずログイン画面へ。完了メッセージを表示 |
-| ログイン | 商品一覧`/products`へ。ログイン前のアクセス先があっても商品一覧を優先 |
-| ログアウト | POSTで認証・セッションを破棄し、CSRFトークンを再生成してログイン画面へ |
-| 未ログインで商品一覧へアクセス | ログイン画面へ |
-| ログイン済みでログイン・登録画面へアクセス | 商品一覧へ |
-| `/`へアクセス | 未ログインならログイン画面、ログイン済みなら商品一覧へ |
-
-ユーザー回答により、ログイン・新規登録・ログアウトだけを採用しています。ログイン保持、パスワード再設定、メール認証、パスワード確認・変更、アカウント削除は公開していません。旧`/dashboard`・`/profile`も廃止しています。プロフィール編集機能はSTEP 12で仕様に合わせて実装します。
-
-不要機能のController・Request・View・Modelメソッドと関連テストを整理しました。既存DBの`remember_token`・`email_verified_at`・`password_reset_tokens`等は保持していますが、これらを使う付属機能は有効にしていません。Mailpitは引き続き利用でき、お問い合わせメールはSTEP 13で実装します。
-
-登録時のパスワードは半角英数字8〜72文字・確認一致です。入力エラー時は安全な入力値を保持し、パスワードと確認用パスワードを再表示しません。入力検証はRequest、保存はUserモデル、スタイルと画面操作は外部CSS・JavaScriptで管理しています。
-
-確認結果：全67テスト（334 assertions）・Pint・ビルドが成功。登録後の未認証状態、パスワードのハッシュ化、重複メール・不正入力、ログイン試行制限と時間経過後の解除、成功時の失敗回数リセット、セッションID・CSRFトークン更新、CSRFなしの送信拒否、認証保護、廃止ルートの404応答を確認しています。
-
-専用テストDBを使ったChromium操作でも、登録エラー後の入力保持・パスワード再表示の防止、登録後に自動ログインしないこと、ログイン後の商品一覧表示、モバイルのログアウトと再アクセス時の認証保護を確認しました。開発DBのユーザーデータは変更していません。コミット・プッシュはユーザーが行います。
-
-## STEP 04：共通画面部品・商品一覧・商品詳細（2026-10-25）
-
-- `/products`で自分以外の未削除商品を商品番号の昇順で表示。列は商品番号・商品名・商品説明・画像・料金・詳細リンク。商品がなければ空一覧のメッセージを表示します。
-- `/products/{product_id}`で商品名・説明・画像・金額・商品に設定された会社名を表示。一覧へ戻る導線があります。
-- ユーザー回答により、自分の商品詳細の直接閲覧も許可しています。存在しない／削除済みの商品は404です。購入の可否とは別の扱いです。
-- 一覧・詳細のデータ取得はProductモデルへ集約。ヘッダー・フッター・商品情報・画像・料金・操作リンクをBladeコンポーネントにしています。
-- スマートフォンでは表の領域内を横スクロールでき、メニューでHome・ログアウト等を表示します。
-
-マイページ・お問い合わせへの導線は準備中です。商品詳細のお気に入り・カート操作も無効にしており、対応STEPで有効化します。検索はまだ実装していません。フッターの著作権表記は原資料の例を使用しています。
-
-### 商品画像
-
-`products.img_path`には公開ディスクからの相対パスを保存します。例：`products/tablet.png`。実際のファイルは`storage/app/public/products/tablet.png`へ配置し、`public/storage`経由で表示します。
-
-```bash
-./vendor/bin/sail artisan storage:link
-```
-
-現在の環境ではリンク作成済みです。新しい環境でも上記コマンドを実行してください。商品画像のアップロードはSTEP 06で実装します。表示対象は`products/`配下の英数字・ハイフン・アンダースコアによるファイルパスと、JPEG・PNG・WebP形式です。ファイルがない場合や、外部URL・親ディレクトリへの参照などの不正なパスでは「画像なし」を表示します。
-
-### 確認結果
-
-全85テスト（404 assertions）・Pint・ビルドに成功しました。専用テストDBのChromium操作でも、一覧の表示対象・順序、公開画像の読み込み、商品詳細の会社・金額、戻る操作、無効な操作、自分の商品詳細、404、モバイルの表の横スクロール・メニューを確認しています。
-
-開発DBへサンプル商品は投入していません。開発DBに商品がない場合は空一覧になります。ブラウザ確認用のデータ・画像は削除済みで、一時サーバーも停止しました。コミット・プッシュはユーザーが行います。
-
-## STEP 05：マイページ（2026-10-25）
-
-`/mypage`に、ログインユーザーの情報・出品一覧・購入一覧を表示します。ヘッダー・フッター・モバイルメニューのマイページリンクから移動できます。
-
-- ユーザー情報：ユーザー名・Eメール・漢字名・カナ名。既存データのカナ名がNULLの場合は「未設定」と表示。
-- 出品一覧：本人の未削除商品だけを商品番号の昇順で表示。列は商品番号・商品名・商品説明・料金・詳細操作。
-- 購入一覧：本人の購入記録だけを購入日時の昇順、同日時なら購入IDの昇順で表示。列は商品名・商品説明・現在の料金・購入個数。
-- 商品が更新・論理削除されても購入履歴は参照可能。購入時点の情報保存用カラムは設けず、現在の商品情報を表示。
-- 未出品・未購入の場合は、それぞれ空一覧のメッセージを表示。会社未設定でも閲覧可能。
-
-DB取得はUserモデルへ集約し、購入商品の関連を一括取得しています。URLのパラメータで他人の情報に切り替えることはできません。商品登録・出品詳細はSTEP 06、アカウント編集はSTEP 12まで準備中の無効表示です。
-
-全95テスト（456 assertions）・Pint・ビルドに成功。専用テストDBのChromium操作でも、表示内容・削除済み商品の購入履歴・価格と数量・空一覧・導線・無効操作・モバイル表示を確認しました。表はカード内で横スクロールし、ページ全体の横幅が広がらないことも確認しています。
-
-開発DBのユーザー・商品・購入データは変更していません。コミット・プッシュはユーザーが行います。
-
-
-## STEP 06：商品新規登録・出品商品詳細（2026-10-25）
-
-- マイページの新規登録から商品登録画面（`GET /products/create`）へ移動できます。商品名・価格・商品説明・在庫数・画像を入力し、登録後は完了メッセージとともにマイページへ戻ります。
-- 商品名・説明は255文字以内の半角英数字・全角文字・空白を許可し、説明は改行にも対応します。価格・在庫数は0〜2147483647の半角数字の整数です。
-- 画像はJPEG・PNG・WebP、最大2MiB。生成したファイル名で公開ストレージの`products/`へ保存します。入力エラー時は画像を再選択してください。DB登録失敗時は保存済み画像を清掃し、安全な入力を保持します。
-- 出品者と会社は認証ユーザーから設定し、フォームで送信されたID・画像パスは採用しません。会社未設定の場合は理由を表示し、サーバー側でも登録を拒否します。会社設定はSTEP 02のphpMyAdmin手順に従ってください。
-- マイページの出品詳細から`GET /mypage/products/{product_id}`へ移動できます。本人以外は403、存在しない／削除済み商品は404です。編集・削除はSTEP 07まで無効表示です。
-- 画像資料に合わせた縦並びの登録フォーム、出品詳細の情報・画像・操作配置を採用。入力部品は編集でも再利用できるBladeコンポーネントに集約しています。
-
-確認結果：全120テスト（627 assertions）・Pint・ビルドに成功。専用testing DBでのChromium操作により、登録・エラー後の入力保持・画像読み込み・本人以外の403・会社未設定・PC／モバイル表示を確認しました。開発DBは変更していません。
-
-
-## STEP 07：出品商品の編集・論理削除（2026-10-25）
-
-- 出品詳細の「編集」から編集画面へ移動できます。商品名・価格・説明・在庫の現在値と既存画像を表示し、更新後は出品詳細に戻ります。画像資料に合わせ、既存画像とファイル選択欄を横に配置しています。
-- 画像未選択なら既存画像を保持。新規画像の条件は登録時と同じです。DB更新成功後に旧画像を整理し、DB更新失敗時は新規画像を清掃して既存データ・画像を保持します。旧画像の清掃だけが失敗した場合は更新成功を維持し、ログに記録します。
-- 更新対象は商品名・価格・説明・在庫・選択した画像のみです。出品者・会社は変更できません。出品後にユーザーの所属会社が未設定になっても、本人の既存商品は編集できます。
-- 削除は確認モーダルで「削除を確定する」を押すと実行し、マイページへ戻ります。キャンセル・Escでは処理しません。商品は論理削除し、一覧から除外します。画像・購入記録・お気に入りの関連行は保持します。
-- 編集・更新・削除は本人のみ操作可能。他人は403、存在しない／削除済み商品は404です。Model内で商品行をロックして更新・削除を行い、DB処理失敗時はロールバックします。
-
-確認結果：全147テスト（809 assertions）・Pint・ビルドに成功。専用testing DBのChromium操作で編集・入力保持・画像未変更／差し替え・削除キャンセル／Esc／確定・削除後の購入履歴・PC／モバイル表示を確認しました。開発DBは変更していません。
-
-
-## STEP 08：商品名・価格の非同期検索（2026-10-25）
-
-- 商品一覧上部に商品名・最低価格・最高価格・検索ボタンを配置。商品名は部分一致、条件はAND、価格の上下限を含みます。片側指定が可能で、空条件は自分以外の未削除商品を全件表示します。商品番号の昇順を維持します。
-- 商品名は255文字以内、価格は0〜2147483647の半角数字の整数です。最低価格が最高価格を超える場合はエラーを表示します。商品名に含まれる`%`・`_`は検索ワイルドカードとして展開しません。
-- `GET /products`へJSONを要求し、`html`と`count`を受け取って一覧部分だけを更新します。初期表示と検索結果は同じBladeを使用し、通常のGET表示でも同じ条件で検索できます。
-- 検索中・件数・0件・入力エラー・通信失敗・認証切れを表示します。失敗時は前回結果を保持。再検索と条件変更では古い通信を中断し、要求番号も照合して古い応答の反映を防ぎます。
-- 全168テスト（908 assertions）・Pint・ビルドに成功。専用testing DBでChromiumによる非同期更新、入力エラー、通信失敗、応答順序逆転、PC／モバイル表示、詳細への遷移を確認しました。開発DBは変更していません。
-
-
-## STEP 09：お気に入り登録・解除（2026-10-25）
-
-- 商品詳細のハートからお気に入りを登録・解除できます。未登録は白、登録済みは赤とし、状態文言・aria-pressedも切り替えます。再表示でも認証ユーザーのDB上の状態を反映します。
-- 登録は`PUT /products/{product_id}/like`、解除は`DELETE /products/{product_id}/like`。セッション認証とCSRFで保護し、JSONの`liked`を返します。送信されたユーザーID等は採用しません。
-- Model内で商品行をロックして削除済み商品への操作を防ぎます。登録は既存行を再利用し、重複リクエストでも増えません。解除も繰り返し可能で、本人以外のお気に入りには影響しません。存在しない／削除済み商品は404です。
-- 外部JSで通信し、処理中は多重操作を抑止。成功時だけ表示を更新し、通信失敗・認証切れ・削除済み商品はエラー表示します。通信結果が不明な場合は再読み込みで状態を確認してください。
-- 全176テスト（975 assertions）・Pint・ビルドに成功。専用testing DBとCSRF有効の一時サーバーで、Chromiumによる登録・解除・状態保持・ユーザー別状態・連続クリック・通信失敗・ハート色・モバイル・キーボード操作を確認しました。開発DBは変更していません。
-
-
-## STEP 10：購入画面・確認モーダル・購入処理（2026-10-25）
-
-- 他人の在庫がある商品の詳細から「カートに追加する」で購入画面へ移動します。画像資料に沿って商品情報・数量・単価・残り在庫・会社を表示します。購入対象は1商品です。
-- 数量は1〜2147483647の半角数字の整数。購入前に商品名と数量の確認モーダルを表示し、キャンセル・Escでは送信しません。確定後はボタンを無効化して二重送信を抑止します。
-- 入力検証はPurchaseRequest、購入処理は画面・後続APIで共用するSaleモデルの`purchase`へ配置。商品行のロック後に未削除・他人の商品・在庫を再検証し、購入記録と在庫減算を同一トランザクションで実行します。
-- 購入成功後は商品一覧へ戻り、マイページで履歴を確認できます。在庫不足は最新の残り在庫と入力数量を表示して再入力を案内します。自分の商品は403、存在しない／削除済み商品は404です。売切れ時は購入ボタンを無効化します。
-- 同一要求の再送を一意に扱う冪等性キーは計画どおり範囲外です。画面の二重送信抑止と、在庫整合性を守るトランザクションを実装しています。購入API・PostmanはSTEP 11で実装します。
-- 同時購入テストは専用MySQL testing DBに確定済みデータを用意し、別PHPプロセスの独立した接続から最後の1個を購入します。1件成功・1件在庫不足、残り在庫0・購入数量合計1を検証します。テスト終了時はテスト用マイグレーションをロールバックします。
-
-確認結果：全197テスト（1123 assertions）・Pint・ビルドに成功。MySQLの独立した2接続で最後の1個の競合購入を検証し、成功1件／在庫不足1件・在庫0・購入数量合計1を確認しました。CSRF有効のChromium操作でも確認モーダル、キャンセル／Esc、送信時ボタン無効化、購入履歴、在庫不足、売切れ、PC／モバイル表示を確認。開発DBは変更していません。
-
-## STEP 11：購入API・Postman
-
-API実装とHTTP確認用成果物を追加。**Postmanアプリでの実機確認は未完了**です。
-
-`POST /api/products/{product_id}/purchases`に`Authorization: Bearer <token>`、`Accept: application/json`、`Content-Type: application/json`を付け、`{"quantity": 1}`を送信します。成功は201で、`data`に`id`（購入記録ID）、`product_id`、`quantity`、`remaining_stock`を返します。401は未認証・無効／期限切れ／失効トークン、403は購入権限不足・自分の商品、404は存在しない／削除済み商品、422は数量不正、409は在庫不足です。セッションログインだけではAPIを利用できません。
-
-画面と同じPurchaseRequest・Saleモデルの購入処理を利用します。APIはCSRFトークンを要求せず、SanctumのBearerトークンと`purchases:create`権限で認証します。導入済みSanctumは4.3.3。新環境では`composer install`後に`./vendor/bin/sail artisan migrate`を実行し、`personal_access_tokens`を追加してください。
-
-### トークン発行・失効
-
-`./vendor/bin/sail artisan tinker`で、実在する購入者ID（以下の`2`を置換）に1時間限定のトークンを発行します。購入者が出品者ではない商品を用意してください。
+`./vendor/bin/sail artisan tinker`を起動し、実在する購入者ID（以下の`2`を置換）へ1時間限定のトークンを発行します。
 
 ```php
 $user = App\Models\User::findOrFail(2);
@@ -341,43 +126,39 @@ $user->createToken('postman-purchase', ['purchases:create'], now()->addHour())->
 $user->createToken('postman-readonly', ['products:read'], now()->addHour())->plainTextToken;
 ```
 
-表示された値をPostmanのローカルEnvironmentの`token`と`readonly_token`に設定します。実トークンをリポジトリや共有用エクスポートへ含めないでください。確認後は同じユーザーで次を実行して失効させます。
+1. `docs/postman/purchase_api.postman_collection.json`と`docs/postman/local.postman_environment.json`をPostmanへImportし、Environmentを選択します。
+2. `base_url`と、上記の`token`・`readonly_token`を設定します。実トークンは共有用エクスポートやGitに含めません。
+3. `product_id`は他人の在庫2以上の商品、`own_product_id`は本人の商品、`deleted_product_id`は論理削除済み商品、`soldout_product_id`は他人の在庫0の商品を指定します。`missing_product_id`が存在しないことも確認します。
+4. 10ケースを実行しTestsを確認します。成功実行ごとに在庫が1減ります。応答IDは`last_sale_id`へ保存されます。
+5. phpMyAdminで該当`sales.id`の購入者・商品・数量と`products.stock`を照合し、画面購入と同じ履歴に反映されることを確認します。
+6. 次のコマンドで確認用トークンを失効し、再送時の401を確認します。実行結果を[全体確認記録](docs/verification.md)へ追記します。
 
 ```php
 $user->tokens()->whereIn('name', ['postman-purchase', 'postman-readonly'])->delete();
 ```
 
-トークン発行画面・APIは追加していません。[Laravel公式Sanctum資料](https://github.com/laravel/docs/blob/13.x/sanctum.md)の期限・権限付きトークンを使用します。
+トークン発行画面・APIはありません。期限・権限付きトークンは[Laravel公式Sanctum資料](https://github.com/laravel/docs/blob/13.x/sanctum.md)に沿っています。Postman実機確認は未実施です。既存のHTTP検証だけで確認済みにはしていません。
 
-### Postmanでの再確認
+## テスト・検証
 
-1. `docs/postman/purchase_api.postman_collection.json`と`docs/postman/local.postman_environment.json`をImportし、Environmentを選びます。
-2. `base_url`を起動先に設定し、上記の2種類のトークンを設定します。
-3. 商品IDを設定します。`product_id`は他人の未削除商品（在庫2以上を推奨）、`own_product_id`はトークン所有者の商品、`deleted_product_id`は論理削除済み商品、`soldout_product_id`は他人の在庫0の商品です。`missing_product_id`は存在しないIDであることを確認します。
-4. 各リクエストを実行し、Testsで期待するステータス・JSONを確認します。201の実行ごとに在庫が1減るため、再実行前に在庫を確認してください。201の応答IDは`last_sale_id`へ保存されます。
-5. phpMyAdminで該当`sales.id`の購入者・商品・数量と`products.stock`を照合し、画面から購入した場合も同じ履歴・在庫に反映されることを確認します。
-6. トークンを失効させて401を確認し、共有前にEnvironmentの実トークンを消去します。Postman実行結果は計画書へ追記してください。
+```bash
+./vendor/bin/sail php -v
+./vendor/bin/sail artisan --version
+./vendor/bin/sail artisan route:list
+./vendor/bin/sail artisan test --compact
+./vendor/bin/sail npm run build
+./vendor/bin/sail composer validate --no-check-publish
+./vendor/bin/sail composer check-platform-reqs
+```
 
-同一要求の再送を一意に処理する冪等性キーは範囲外です。成功した購入を再送すると、在庫がある限り別購入になります。
+テストは`phpunit.xml`と`tests/TestCase.php`でMySQLの専用`testing` DBへ制限しています。SailのMySQL初回作成時にテストDBも作成されます。既存ボリュームにない場合は、phpMyAdminで`testing` DBを作り、アプリ用DBユーザーへそのDBの権限を付与してください。開発DBをテストの初期化先にしないでください。
 
-検証結果：全213テスト（1190 assertions）・Pint・Composer検証に成功。専用testing DBに対する実HTTP確認でCollectionの10ケース・24アサーションが成功し、購入後の在庫とsalesを照合しました。これはPostmanアプリの実行結果ではありません。検証用トークンは失効・清掃済み。開発DBはpersonal_access_tokensの作成のみ行い、既存データは変更していません。
+同時購入テストは別PHPプロセスの独立したMySQL接続で最後の1個を競合購入し、1件成功・1件在庫不足を検証します。テスト終了時にテスト用マイグレーションをロールバックするため、その後の手動テストに`testing` DBを使う場合は同DBを明示してマイグレーションしてください。
 
+## 制限・提出物
 
-## STEP 12：アカウント編集（2026-10-25）
+決済・配送・複数商品のカート・会社管理画面・本番公開は範囲外です。パスワード再設定／変更・メール認証・アカウント削除は公開していません。ページネーションと大量データ対応は未実装です。
 
-- マイページの「アカウント編集」から`GET /account/edit`へ移動し、ユーザー名・Eメール・名前（漢字）・名前（カナ）の順で現在値を表示します。画像資料に合わせた縦並びフォームです。
-- `PATCH /account`で認証ユーザー本人の4項目だけを更新します。対象IDの入力やURL指定は不要で、送信された他人のID・会社・パスワード等は保存しません。更新後は完了メッセージとともにマイページへ戻り、ヘッダーにも変更名が反映されます。
-- UpdateAccountRequestは登録時の文字条件を共用します。各項目は必須・255文字以内。メールは形式・小文字・一意性を検証し、本人のメールは据え置き可能です。カナがNULLの既存ユーザーは空欄で表示し、更新時に入力します。
-- 保存はUserモデルへ集約し、DB更新失敗時はロールバック。入力エラー・更新失敗時は安全な入力を保持します。パスワード変更・会社変更・アカウント削除は追加していません。
+購入時の商品情報のスナップショットや、同一要求を一度だけ処理する冪等性キーはありません。成功リクエストを再送すると在庫がある限り別購入になります。画面の多重送信抑止と、在庫整合性を守るトランザクションを実装しています。
 
-確認結果：全234テスト（1302 assertions）・Pint・ビルドに成功。専用testing DB・CSRF有効のChromiumで現在値、メール重複・据え置き、入力保持、ヘッダー反映、PC／モバイル表示、変更メールと既存パスワードでの再ログインを確認しました。開発DBのユーザーデータは変更していません。
-
-
-## STEP 13：お問い合わせ・Mailpit（2026-10-25）
-
-- フッターの「お問い合わせ」から認証保護付きの`GET /contact`へ移動します。名前・メールアドレス・本文を入力し、`POST /contact`の送信成功時は商品一覧へ戻ります。戻るリンクは送信せず商品一覧へ移動します。
-- ContactRequestで必須・文字列・文字数（名前／メール255文字、本文2000文字）・メール形式を検証します。失敗時はフォームへ戻り、安全な入力値を保持。問い合わせ保存用DBテーブルは追加していません。
-- 宛先は`CONTACT_TO_ADDRESS`で指定し、未設定時は開発用の`admin@example.test`です。`.env.example`に設定例を追加しています。差出人は`MAIL_FROM_ADDRESS`／`MAIL_FROM_NAME`で固定し、入力メールは返信先（Reply-To）に使用します。件名は「Cytech EC お問い合わせ」。本文はHTMLエスケープして改行を保持します。
-- 開発環境は`MAIL_MAILER=smtp`、`MAIL_HOST=mailpit`、`MAIL_PORT=1025`を使用します。設定変更後は必要に応じて`./vendor/bin/sail artisan config:clear`を実行してください。`MAIL_URL`は未設定を推奨し、空文字の環境変数でSMTP設定を上書きしないでください。
-- 送信後にMailpit（通常`http://localhost:8025`、ポート変更時は変更先）を開き、宛先・From・Reply-To・件名・本文を確認します。実際の管理者への外部メール配送は今回の範囲に含めません。
-- 全251テスト（1385 assertions）・Pint・ビルドに成功。CSRF有効のChromiumで入力検証・入力保持・実SMTP接続失敗・送信成功・PC／モバイル表示・戻る操作を確認しました。Mailpitへの実SMTP受信でも宛先・From・Reply-To・件名・本文と改行を確認済み。確認用メール・ユーザーは清掃し、開発DBは変更していません。
+`.env`・実トークン・ログ・依存パッケージ本体・ビルド成果物はGit管理外です。仕様書・計画書・画像資料はプロジェクトの親フォルダーにあり、このリポジトリだけを渡す場合は資料も別途同梱してください。コミット・プッシュはユーザーが工程ごとに行います。
