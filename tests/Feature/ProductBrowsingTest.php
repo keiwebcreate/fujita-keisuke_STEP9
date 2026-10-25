@@ -159,7 +159,7 @@ class ProductBrowsingTest extends TestCase
 
         $this->actingAs($viewer)->get(route('products.index'))->assertOk()
             ->assertSee('ログインユーザー：閲覧ユーザー')->assertSee('ログアウト')
-            ->assertSee('お問い合わせ（準備中）')->assertSee(route('mypage.show'), false)
+            ->assertSee(route('contact.create'), false)->assertSee(route('mypage.show'), false)
             ->assertSee('<footer', false)->assertSee('© 2024 Company, Inc')
             ->assertDontSee('href="#"', false);
     }
