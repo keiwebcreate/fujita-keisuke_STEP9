@@ -4,6 +4,9 @@
         <div class="page-content__container">
             <section class="content-panel" aria-label="商品一覧">
                 <div class="content-panel__body">
+                    @if (session('status'))
+                        <p class="status-message status-message--success" role="status">{{ session('status') }}</p>
+                    @endif
                     <form method="GET" action="{{ route('products.index') }}" class="product-search" data-product-search>
                         <div class="product-search__field product-search__field--name">
                             <x-input_label for="searchProductName" value="商品名" class="form-field__label--visually-hidden" />

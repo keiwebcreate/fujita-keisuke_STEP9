@@ -1,3 +1,4 @@
+import { initializePurchaseForms } from './product_purchase';
 import { initializeProductFavorites } from './product_favorites';
 import { initializeProductSearch } from './product_search';
 
@@ -97,3 +98,5 @@ document.querySelectorAll('[data-auto-dismiss]').forEach((message) => {
 initializeProductSearch();
 
 initializeProductFavorites();
+
+initializePurchaseForms();
