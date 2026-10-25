@@ -10,7 +10,7 @@
 - MySQL 8.4 / phpMyAdmin / Mailpit
 - Laravel Boost（AGENTS.mdの指定に従った開発用パッケージ）
 
-現在はSTEP 10まで実装済みです。登録後は自動ログインせずログイン画面へ、ログイン後は商品一覧へ、ログアウト後はログイン画面へ遷移します。商品一覧・詳細・マイページ・共通ヘッダー／フッターが利用できます。商品登録・本人限定の出品詳細・編集・論理削除が利用できます。商品名・価格による非同期検索も利用できます。お気に入りの登録・解除も利用できます。数量を指定した確認モーダル付き購入も利用できます。
+STEP 10まで完了し、STEP 11の購入API実装・HTTP確認まで済んでいます（Postman実機確認待ち）。登録後は自動ログインせずログイン画面へ、ログイン後は商品一覧へ、ログアウト後はログイン画面へ遷移します。商品一覧・詳細・マイページ・共通ヘッダー／フッターが利用できます。商品登録・本人限定の出品詳細・編集・論理削除が利用できます。商品名・価格による非同期検索も利用できます。お気に入りの登録・解除も利用できます。数量を指定した確認モーダル付き購入も利用できます。
 
 コーディング規約への対応として、生成画面のTailwindクラスを通常CSSへ置き換え、Viewファイル名をスネークケース、HTMLのclassをBEM、IDをローワーキャメルへ統一しています。画面操作は外部JavaScript、入力検証はForm Request、DB保存はUserモデルへ配置します。
 
@@ -322,3 +322,42 @@ DB取得はUserモデルへ集約し、購入商品の関連を一括取得し�
 - 同時購入テストは専用MySQL testing DBに確定済みデータを用意し、別PHPプロセスの独立した接続から最後の1個を購入します。1件成功・1件在庫不足、残り在庫0・購入数量合計1を検証します。テスト終了時はテスト用マイグレーションをロールバックします。
 
 確認結果：全197テスト（1123 assertions）・Pint・ビルドに成功。MySQLの独立した2接続で最後の1個の競合購入を検証し、成功1件／在庫不足1件・在庫0・購入数量合計1を確認しました。CSRF有効のChromium操作でも確認モーダル、キャンセル／Esc、送信時ボタン無効化、購入履歴、在庫不足、売切れ、PC／モバイル表示を確認。開発DBは変更していません。
+
+## STEP 11：購入API・Postman
+
+API実装とHTTP確認用成果物を追加。**Postmanアプリでの実機確認は未完了**です。
+
+`POST /api/products/{product_id}/purchases`に`Authorization: Bearer <token>`、`Accept: application/json`、`Content-Type: application/json`を付け、`{"quantity": 1}`を送信します。成功は201で、`data`に`id`（購入記録ID）、`product_id`、`quantity`、`remaining_stock`を返します。401は未認証・無効／期限切れ／失効トークン、403は購入権限不足・自分の商品、404は存在しない／削除済み商品、422は数量不正、409は在庫不足です。セッションログインだけではAPIを利用できません。
+
+画面と同じPurchaseRequest・Saleモデルの購入処理を利用します。APIはCSRFトークンを要求せず、SanctumのBearerトークンと`purchases:create`権限で認証します。導入済みSanctumは4.3.3。新環境では`composer install`後に`./vendor/bin/sail artisan migrate`を実行し、`personal_access_tokens`を追加してください。
+
+### トークン発行・失効
+
+`./vendor/bin/sail artisan tinker`で、実在する購入者ID（以下の`2`を置換）に1時間限定のトークンを発行します。購入者が出品者ではない商品を用意してください。
+
+```php
+$user = App\Models\User::findOrFail(2);
+$user->createToken('postman-purchase', ['purchases:create'], now()->addHour())->plainTextToken;
+$user->createToken('postman-readonly', ['products:read'], now()->addHour())->plainTextToken;
+```
+
+表示された値をPostmanのローカルEnvironmentの`token`と`readonly_token`に設定します。実トークンをリポジトリや共有用エクスポートへ含めないでください。確認後は同じユーザーで次を実行して失効させます。
+
+```php
+$user->tokens()->whereIn('name', ['postman-purchase', 'postman-readonly'])->delete();
+```
+
+トークン発行画面・APIは追加していません。[Laravel公式Sanctum資料](https://github.com/laravel/docs/blob/13.x/sanctum.md)の期限・権限付きトークンを使用します。
+
+### Postmanでの再確認
+
+1. `docs/postman/purchase_api.postman_collection.json`と`docs/postman/local.postman_environment.json`をImportし、Environmentを選びます。
+2. `base_url`を起動先に設定し、上記の2種類のトークンを設定します。
+3. 商品IDを設定します。`product_id`は他人の未削除商品（在庫2以上を推奨）、`own_product_id`はトークン所有者の商品、`deleted_product_id`は論理削除済み商品、`soldout_product_id`は他人の在庫0の商品です。`missing_product_id`は存在しないIDであることを確認します。
+4. 各リクエストを実行し、Testsで期待するステータス・JSONを確認します。201の実行ごとに在庫が1減るため、再実行前に在庫を確認してください。201の応答IDは`last_sale_id`へ保存されます。
+5. phpMyAdminで該当`sales.id`の購入者・商品・数量と`products.stock`を照合し、画面から購入した場合も同じ履歴・在庫に反映されることを確認します。
+6. トークンを失効させて401を確認し、共有前にEnvironmentの実トークンを消去します。Postman実行結果は計画書へ追記してください。
+
+同一要求の再送を一意に処理する冪等性キーは範囲外です。成功した購入を再送すると、在庫がある限り別購入になります。
+
+検証結果：全213テスト（1190 assertions）・Pint・Composer検証に成功。専用testing DBに対する実HTTP確認でCollectionの10ケース・24アサーションが成功し、購入後の在庫とsalesを照合しました。これはPostmanアプリの実行結果ではありません。検証用トークンは失効・清掃済み。開発DBはpersonal_access_tokensの作成のみ行い、既存データは変更していません。
