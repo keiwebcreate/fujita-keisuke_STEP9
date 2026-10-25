@@ -5,7 +5,7 @@
             <a class="site-navigation__brand" href="{{ route('products.index') }}">{{ config('app.name') }}</a>
             <div class="site-navigation__links">
                 <x-nav_link :href="route('products.index')" :active="request()->routeIs('products.*')">Home</x-nav_link>
-                <span class="navigation-link navigation-link--disabled" aria-disabled="true" title="マイページは準備中です">マイページ（準備中）</span>
+                <x-nav_link :href="route('mypage.show')" :active="request()->routeIs('mypage.*')">マイページ</x-nav_link>
             </div>
             <div class="site-navigation__account">
                 <span class="site-navigation__user">ログインユーザー：{{ $userName }}</span>
@@ -19,7 +19,7 @@
     </div>
     <div id="mobileNavigation" class="site-navigation__mobile" data-navigation-panel hidden>
         <x-responsive_nav_link :href="route('products.index')" :active="request()->routeIs('products.*')">Home</x-responsive_nav_link>
-        <span class="navigation-link navigation-link--mobile navigation-link--disabled" aria-disabled="true">マイページ（準備中）</span>
+        <x-responsive_nav_link :href="route('mypage.show')" :active="request()->routeIs('mypage.*')">マイページ</x-responsive_nav_link>
         <div class="site-navigation__identity">
             <div class="site-navigation__name">ログインユーザー：{{ $userName }}</div>
         </div>
