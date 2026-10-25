@@ -27,12 +27,12 @@ class EcMigrationTest extends TestCase
 
     public function test_ec_migrations_can_be_rolled_back_and_reapplied_without_recreating_the_users_table(): void
     {
-        $this->artisan('migrate:rollback', ['--step' => 5])->assertSuccessful();
+        $this->artisan('migrate:rollback', ['--step' => 6])->assertSuccessful();
 
         $this->assertTrue(Schema::hasTable('users'));
         $this->assertTrue(Schema::hasTable('sessions'));
         $this->assertFalse(Schema::hasColumn('users', 'name_kanji'));
-        foreach (['companies', 'products', 'sales', 'likes'] as $table_name) {
+        foreach (['companies', 'products', 'sales', 'likes', 'personal_access_tokens'] as $table_name) {
             $this->assertFalse(Schema::hasTable($table_name));
         }
 
@@ -42,11 +42,12 @@ class EcMigrationTest extends TestCase
         $this->assertTrue(Schema::hasColumn('products', 'deleted_at'));
         $this->assertTrue(Schema::hasTable('sales'));
         $this->assertTrue(Schema::hasTable('likes'));
+        $this->assertTrue(Schema::hasTable('personal_access_tokens'));
     }
 
     public function test_profile_migration_refuses_to_invent_names_for_existing_users(): void
     {
-        $this->artisan('migrate:rollback', ['--step' => 5])->assertSuccessful();
+        $this->artisan('migrate:rollback', ['--step' => 6])->assertSuccessful();
         $user = User::registerUser(['name' => 'Existing user', 'email' => 'existing@example.test', 'password' => 'password']);
         $migration_path = glob(database_path('migrations/*_add_profile_fields_to_users_table.php'))[0];
         $migration = require $migration_path;
