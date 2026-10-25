@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\ListedProductController;
 use App\Http\Controllers\MyPageController;
@@ -15,6 +16,8 @@ Route::get('/', fn (Request $request): RedirectResponse => to_route(
 ))->name('home');
 
 Route::middleware('auth')->group(function (): void {
+    Route::get('/contact', [ContactController::class, 'create'])->name('contact.create');
+    Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
     Route::get('/account/edit', [AccountController::class, 'edit'])->name('account.edit');
     Route::patch('/account', [AccountController::class, 'update'])->name('account.update');
     Route::get('/mypage', [MyPageController::class, 'show'])->name('mypage.show');
