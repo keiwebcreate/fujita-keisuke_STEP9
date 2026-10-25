@@ -29,7 +29,7 @@ class MyPageTest extends TestCase
         $this->actingAs($user)->get(route('mypage.show'))->assertOk()
             ->assertSee('マイページ利用者')->assertSee('mypage@example.test')
             ->assertSee('山田太郎')->assertSee('ヤマダタロウ')
-            ->assertSee('アカウント編集（準備中）')->assertSee('新規登録（準備中）');
+            ->assertSee('アカウント編集（準備中）')->assertSee(route('products.create'), false);
     }
 
     public function test_empty_lists_and_legacy_null_kana_are_displayed_without_a_company(): void

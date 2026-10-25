@@ -186,3 +186,6 @@ button:disabled, input:disabled { cursor: not-allowed; opacity: .5; }
     .auth-form .form-field__errors { grid-column: 1; }
     .auth-form .form-actions { margin-left: 0; }
 }
+.product-form__file { display: block; max-width: 100%; margin-top: .5rem; }
+.product-form__help { margin: .5rem 0 0; font-size: .875rem; color: var(--color-muted); }
+.product-form__notice { color: var(--color-danger); }

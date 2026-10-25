@@ -2,6 +2,9 @@
     <x-slot name="header"><h1 class="page-header__title">マイページ</h1></x-slot>
     <div class="page-content">
         <div class="page-content__container page-content__container--stacked">
+            @if (session('status'))
+                <p class="status-message status-message--success" role="status">{{ session('status') }}</p>
+            @endif
             <section class="content-panel" aria-labelledby="userInfoTitle">
                 <div class="content-panel__body">
                     <div class="mypage-section__header">
@@ -20,7 +23,7 @@
                 <div class="content-panel__body">
                     <div class="mypage-section__header">
                         <h2 id="listedProductsTitle" class="mypage-section__title">出品商品一覧</h2>
-                        <x-primary_button type="button" disabled>新規登録（準備中）</x-primary_button>
+                        <x-action_link :href="route('products.create')">新規登録</x-action_link>
                     </div>
                     @if ($user->products->isEmpty())
                         <p class="empty-message" role="status">出品した商品はありません。</p>
@@ -36,7 +39,7 @@
                                             <td class="product-table__name">{{ $product->product_name }}</td>
                                             <td class="product-table__description">{{ $product->description }}</td>
                                             <td class="product-table__price"><x-product_price :price="$product->price" /></td>
-                                            <td><button type="button" class="button button--detail" disabled>詳細（準備中）</button></td>
+                                            <td><x-action_link :href="route('listed_products.show', $product->id)" variant="detail" :aria-label="$product->product_name.'の出品詳細'">詳細</x-action_link></td>
                                         </tr>
                                     @endforeach
                                 </tbody>
