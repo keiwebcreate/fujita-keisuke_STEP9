@@ -1,17 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="page-header__title">
-            {{ __('Dashboard') }}
-        </h2>
+        <h1 class="page-header__title">商品一覧</h1>
     </x-slot>
-
     <div class="page-content">
         <div class="page-content__container">
-            <div class="content-panel">
+            <section class="content-panel">
                 <div class="content-panel__body">
-                    {{ __("You're logged in!") }}
+                    <p>商品一覧は準備中です。</p>
                 </div>
-            </div>
+            </section>
         </div>
     </div>
 </x-app-layout>
