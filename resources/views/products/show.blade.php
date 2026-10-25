@@ -8,8 +8,14 @@
                     @if ($product->stock === 0)
                         <p class="stock-status">売り切れ</p>
                     @endif
-                    <p class="product-detail__notice">お気に入り・購入機能は準備中です。</p>
-                    <button type="button" class="button button--favorite" disabled>お気に入り（準備中）</button>
+                    <div class="product-favorite" data-product-favorite>
+                        <button type="button" @class(['favorite-button', 'favorite-button--active' => $liked]) data-favorite-button data-favorite-url="{{ route('products.like.store', $product->id) }}" aria-pressed="{{ $liked ? 'true' : 'false' }}" aria-label="{{ $liked ? 'お気に入りを解除' : 'お気に入りに登録' }}" aria-describedby="favoriteStatus" aria-busy="false">
+                            <svg class="favorite-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 3.4 12.6C-2 7.2 5.8-1 12 5.2 18.2-1 26 7.2 20.6 12.6Z" /></svg>
+                        </button>
+                        <span id="favoriteStatus" class="product-favorite__status" data-favorite-status role="status" aria-live="polite">{{ $liked ? 'お気に入り登録済み' : 'お気に入り未登録' }}</span>
+                        <p class="product-favorite__error" data-favorite-error role="alert" hidden></p>
+                    </div>
+                    <p class="product-detail__notice">購入機能は準備中です。</p>
                     <div class="form-actions">
                         <x-primary_button type="button" disabled>カートに追加する</x-primary_button>
                         <x-action_link :href="route('products.index')" variant="secondary">戻る</x-action_link>
