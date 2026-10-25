@@ -9,7 +9,7 @@
     </head>
     <body class="site-page">
         <div class="guest-page">
-            <a class="guest-page__brand" href="{{ url('/') }}"><x-application_logo class="guest-page__logo" /></a>
+            <a class="guest-page__brand" href="{{ route('home') }}"><x-application_logo class="guest-page__logo" /></a>
             <main class="auth-panel">{{ $slot }}</main>
         </div>
     </body>

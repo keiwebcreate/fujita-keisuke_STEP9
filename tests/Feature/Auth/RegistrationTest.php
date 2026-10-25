@@ -3,7 +3,9 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\Company;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -31,14 +33,49 @@ class RegistrationTest extends TestCase
             'password_confirmation' => 'password',
         ]);
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertGuest();
+        $response->assertRedirect(route('login'));
         $this->assertDatabaseHas('users', [
             'email' => 'test@example.com',
             'name_kanji' => '山田太郎',
             'name_kana' => 'ヤマダタロウ',
             'company_id' => null,
         ]);
+        $this->assertTrue(Hash::check('password', User::where('email', 'test@example.com')->firstOrFail()->password));
+        $response->assertSessionHas('status', '登録が完了しました。ログインしてください。');
+    }
+
+    public function test_password_mismatch_and_duplicate_email_do_not_create_new_users(): void
+    {
+        $user = User::factory()->create(['email' => 'taken@example.com']);
+        $payload = [
+            'name' => 'Test User', 'name_kanji' => '山田太郎', 'name_kana' => 'ヤマダタロウ',
+            'email' => 'taken@example.com', 'password' => 'password', 'password_confirmation' => 'different',
+        ];
+
+        $this->from('/register')->post('/register', $payload)->assertRedirect('/register')
+            ->assertSessionHasErrors(['email', 'password'])
+            ->assertSessionHas('_old_input.name_kanji', '山田太郎')
+            ->assertSessionMissing('_old_input.password')
+            ->assertSessionMissing('_old_input.password_confirmation');
+
+        $this->assertGuest();
+        $this->assertDatabaseCount('users', 1);
+        $this->assertModelExists($user);
+    }
+
+    public function test_password_boundary_lengths_are_accepted(): void
+    {
+        foreach ([8, 72] as $length) {
+            $this->post('/register', [
+                'name' => 'Test User', 'name_kanji' => '山田太郎', 'name_kana' => 'ヤマダタロウ',
+                'email' => 'boundary'.$length.'@example.com',
+                'password' => str_repeat('A', $length), 'password_confirmation' => str_repeat('A', $length),
+            ])->assertSessionHasNoErrors()->assertRedirect(route('login'));
+            $this->assertGuest();
+        }
+
+        $this->assertDatabaseCount('users', 2);
     }
 
     #[DataProvider('invalidNames')]
@@ -53,6 +90,9 @@ class RegistrationTest extends TestCase
             'password_confirmation' => 'password',
         ];
         $payload[$field] = $value;
+        if ($field === 'password') {
+            $payload['password_confirmation'] = $value;
+        }
 
         $this->from('/register')->post('/register', $payload)
             ->assertRedirect('/register')
@@ -66,6 +106,14 @@ class RegistrationTest extends TestCase
     public static function invalidNames(): array
     {
         return [
+            'missing user name' => ['name', null],
+            'half width kana user name' => ['name', 'ﾔﾏﾀﾞ'],
+            'too long user name' => ['name', str_repeat('A', 256)],
+            'missing password' => ['password', null],
+            'short password' => ['password', 'short'],
+            'too long password' => ['password', str_repeat('A', 73)],
+            'password punctuation' => ['password', 'password!'],
+            'full width password' => ['password', 'ＡＢＣＤＥＦＧＨ'],
             'missing kanji' => ['name_kanji', null],
             'half width kanji name' => ['name_kanji', 'Yamada'],
             'too long kanji' => ['name_kanji', str_repeat('山', 256)],
@@ -88,7 +136,7 @@ class RegistrationTest extends TestCase
             'password' => 'password',
             'password_confirmation' => 'password',
             'company_id' => $company->id,
-        ])->assertSessionHasNoErrors()->assertRedirect(route('dashboard', absolute: false));
+        ])->assertSessionHasNoErrors()->assertRedirect(route('login'));
 
         $this->assertDatabaseHas('users', ['email' => 'test@example.com', 'company_id' => null]);
     }
