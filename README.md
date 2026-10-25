@@ -101,6 +101,8 @@ FROM users LEFT JOIN companies ON companies.id = users.company_id WHERE users.id
 
 `/contact`で名前・メール（各255文字以内）・本文（2000文字以内）を入力します。送信成功時は商品一覧へ移動し、失敗時は入力を保持して案内します。問い合わせ保存用DBテーブルはありません。
 
+検索の商品名と問い合わせの名前・本文は、半角英数字・記号、日本語・全角文字と空白を許可し、半角カナ・絵文字は拒否します。問い合わせ本文では改行・タブも使用できます。原資料で未定義の記号は、URLなどを入力できるよう許可しています。
+
 ```dotenv
 MAIL_MAILER=smtp
 MAIL_HOST=mailpit

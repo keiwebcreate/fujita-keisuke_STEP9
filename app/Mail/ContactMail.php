@@ -10,16 +10,16 @@ use Illuminate\Mail\Mailables\Envelope;
 class ContactMail extends Mailable
 {
     public function __construct(
-        public readonly string $contact_name,
-        public readonly string $contact_email,
-        public readonly string $contact_body,
+        public readonly string $contactName,
+        public readonly string $contactEmail,
+        public readonly string $contactBody,
     ) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
             from: new Address(config('mail.from.address'), config('mail.from.name')),
-            replyTo: [new Address($this->contact_email)],
+            replyTo: [new Address($this->contactEmail)],
             subject: 'Cytech EC お問い合わせ',
         );
     }

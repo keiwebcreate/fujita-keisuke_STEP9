@@ -15,9 +15,9 @@ class ContactRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', 'regex:/\A[\x20-\x7E\p{Han}\p{Hiragana}ァ-ヺー々〆〇\x{3000}-\x{303F}\x{FF01}-\x{FF60}\x{FFE0}-\x{FFE6}]+\z/u'],
             'email' => ['required', 'string', 'email', 'max:255'],
-            'message' => ['required', 'string', 'max:2000'],
+            'message' => ['required', 'string', 'max:2000', 'regex:/\A[\x20-\x7E\p{Han}\p{Hiragana}ァ-ヺー々〆〇\x{3000}-\x{303F}\x{FF01}-\x{FF60}\x{FFE0}-\x{FFE6}\r\n\t]+\z/u'],
         ];
     }
 
@@ -35,6 +35,8 @@ class ContactRequest extends FormRequest
             'string' => ':attributeは文字列で入力してください。',
             'name.max' => '名前は255文字以内で入力してください。',
             'email.max' => 'メールアドレスは255文字以内で入力してください。',
+            'name.regex' => '名前は半角英数字・記号・全角文字・空白で入力してください。',
+            'message.regex' => 'お問い合わせ内容は半角英数字・記号・全角文字・空白・改行で入力してください。',
             'email.email' => '有効なメールアドレスを入力してください。',
             'message.max' => 'お問い合わせ内容は2000文字以内で入力してください。',
         ];

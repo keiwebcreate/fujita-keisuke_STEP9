@@ -79,6 +79,8 @@ class ProductSearchTest extends TestCase
     public static function invalidFilters(): array
     {
         return [
+            'halfwidth kana' => [['product_name' => 'ﾀﾌﾞﾚｯﾄ'], 'product_name'],
+            'emoji' => [['product_name' => '商品😀'], 'product_name'],
             'reversed' => [['min_price' => 200, 'max_price' => 100], 'max_price'],
             'negative' => [['min_price' => -1], 'min_price'],
             'decimal' => [['max_price' => '1.5'], 'max_price'],

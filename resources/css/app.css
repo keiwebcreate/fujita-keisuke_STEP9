@@ -190,6 +190,7 @@ button:disabled, input:disabled { cursor: not-allowed; opacity: .5; }
 .product-form__help { margin: .5rem 0 0; font-size: .875rem; color: var(--color-muted); }
 .product-form__notice { color: var(--color-danger); }
 .product-form__image-row { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-top: .5rem; }
+.product-form__image-row .product-form__file { margin-top: 0; }
 .product-form__image-row .product-image--compact { width: 8rem; min-height: 6rem; }
 .product-form__image-row .product-image__content { max-height: 6rem; }
 .product-search { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 1rem; margin: 0 0 1.5rem; }

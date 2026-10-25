@@ -20,8 +20,8 @@
     <x-input_error :messages="$errors->get('stock')" />
 </div>
 <div class="form-field">
-    <x-input_label for="productImage" :value="$imageRequired ? '商品画像（必須）' : '商品画像'" />
     <div @class(['product-form__image-row' => $product !== null])>
+        <x-input_label for="productImage" :value="$imageRequired ? '商品画像（必須）' : '商品画像'" />
         @if ($product)
             <x-product_image :path="$product->img_path" :name="$product->product_name" compact />
         @endif

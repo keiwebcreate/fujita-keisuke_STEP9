@@ -16,7 +16,7 @@ class SearchProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_name' => ['nullable', 'string', 'max:255'],
+            'product_name' => ['nullable', 'string', 'max:255', 'regex:/\A[\x20-\x7E\p{Han}\p{Hiragana}ァ-ヺー々〆〇\x{3000}-\x{303F}\x{FF01}-\x{FF60}\x{FFE0}-\x{FFE6}]+\z/u'],
             'min_price' => ['nullable', 'integer', 'min:0', 'max:2147483647', 'regex:/\A[0-9]+\z/'],
             'max_price' => ['nullable', 'integer', 'min:0', 'max:2147483647', 'regex:/\A[0-9]+\z/'],
         ];
@@ -39,6 +39,7 @@ class SearchProductRequest extends FormRequest
     {
         return [
             'product_name.string' => '商品名は文字列で入力してください。',
+            'product_name.regex' => '商品名は半角英数字・記号・全角文字・空白で入力してください。',
             'product_name.max' => '商品名は255文字以内で入力してください。',
             'min_price.*' => '最低価格は0〜2147483647の半角数字の整数で入力してください。',
             'max_price.*' => '最高価格は0〜2147483647の半角数字の整数で入力してください。',
