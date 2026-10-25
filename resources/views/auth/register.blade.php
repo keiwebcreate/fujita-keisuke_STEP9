@@ -4,49 +4,61 @@
 
         <!-- Name -->
         <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            <x-input_label for="name" :value="__('Name')" />
+            <x-text_input id="name" class="form-field__input" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
+            <x-input_error :messages="$errors->get('name')" class="form-field__errors" />
+        </div>
+
+        <div class="form-field">
+            <x-input_label for="nameKanji" :value="__('名前（漢字）')" />
+            <x-text_input id="nameKanji" type="text" name="name_kanji" :value="old('name_kanji')" required maxlength="255" />
+            <x-input_error :messages="$errors->get('name_kanji')" />
+        </div>
+
+        <div class="form-field">
+            <x-input_label for="nameKana" :value="__('名前（カナ）')" />
+            <x-text_input id="nameKana" type="text" name="name_kana" :value="old('name_kana')" required maxlength="255" />
+            <x-input_error :messages="$errors->get('name_kana')" />
         </div>
 
         <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="form-field">
+            <x-input_label for="email" :value="__('Email')" />
+            <x-text_input id="email" class="form-field__input" type="email" name="email" :value="old('email')" required autocomplete="username" />
+            <x-input_error :messages="$errors->get('email')" class="form-field__errors" />
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+        <div class="form-field">
+            <x-input_label for="password" :value="__('Password')" />
 
-            <x-text-input id="password" class="block mt-1 w-full"
+            <x-text_input id="password" class="form-field__input"
                             type="password"
                             name="password"
                             required autocomplete="new-password" />
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            <x-input_error :messages="$errors->get('password')" class="form-field__errors" />
         </div>
 
         <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+        <div class="form-field">
+            <x-input_label for="passwordConfirmation" :value="__('Confirm Password')" />
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
+            <x-text_input id="passwordConfirmation" class="form-field__input"
                             type="password"
                             name="password_confirmation" required autocomplete="new-password" />
 
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            <x-input_error :messages="$errors->get('password_confirmation')" class="form-field__errors" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
+        <div class="form-actions form-actions--end">
+            <a class="text-link" href="{{ route('login') }}">
                 {{ __('Already registered?') }}
             </a>
 
-            <x-primary-button class="ms-4">
+            <x-primary_button class="form-actions__button">
                 {{ __('Register') }}
-            </x-primary-button>
+            </x-primary_button>
         </div>
     </form>
 </x-guest-layout>
