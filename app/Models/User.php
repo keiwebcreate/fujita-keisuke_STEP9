@@ -55,6 +55,15 @@ class User extends Authenticatable
         return $this->hasMany(Like::class);
     }
 
+    public function getMyPageData(): self
+    {
+        return $this->load([
+            'products' => fn (HasMany $relation): HasMany => $relation->orderBy('id'),
+            'sales' => fn (HasMany $relation): HasMany => $relation->with('product')
+                ->orderBy('created_at')->orderBy('id'),
+        ]);
+    }
+
     /** @param array<string, mixed> $validated_data */
     public static function registerUser(array $validated_data): self
     {
