@@ -19,10 +19,25 @@ class Product extends Model
     /** @use HasFactory<ProductFactory> */
     use HasFactory, SoftDeletes;
 
-    /** @return Collection<int, Product> */
-    public static function getListedProductsForUser(int $user_id): Collection
+    /**
+     * @param  array{product_name?: string|null, min_price?: int|string|null, max_price?: int|string|null}  $filters
+     * @return Collection<int, Product>
+     */
+    public static function getListedProductsForUser(int $user_id, array $filters = []): Collection
     {
-        return self::query()->where('user_id', '!=', $user_id)->orderBy('id')->get();
+        $query = self::query()->where('user_id', '!=', $user_id);
+        if (isset($filters['product_name']) && $filters['product_name'] !== '') {
+            $keyword = strtr($filters['product_name'], ['!' => '!!', '%' => '!%', '_' => '!_']);
+            $query->whereRaw("product_name LIKE ? ESCAPE '!'", ['%'.$keyword.'%']);
+        }
+        if (isset($filters['min_price'])) {
+            $query->where('price', '>=', $filters['min_price']);
+        }
+        if (isset($filters['max_price'])) {
+            $query->where('price', '<=', $filters['max_price']);
+        }
+
+        return $query->orderBy('id')->get();
     }
 
     public static function getProductDetail(string $product_id): self
