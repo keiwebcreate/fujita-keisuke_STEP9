@@ -1,3 +1,4 @@
+{{-- 問い合わせ入力画面です。入力エラーや送信失敗の案内を、それぞれ対応する場所に表示します。 --}}
 <x-app-layout>
     <x-slot name="header"><h1 class="page-header__title">お問い合わせフォーム</h1></x-slot>
     <div class="page-content">
@@ -6,6 +7,7 @@
                 <div class="content-panel__body">
                     <x-input_error :messages="$errors->get('sending')" />
                     <form method="POST" action="{{ route('contact.store') }}">
+                        {{-- csrfは、他のサイトから勝手に送信されるのを防ぐ確認用の値を埋め込みます。 --}}
                         @csrf
                         <div class="form-field">
                             <x-input_label for="contactName" value="名前（必須）" />

@@ -44,7 +44,7 @@ class ContactTest extends TestCase
             ->assertRedirect(route('products.index'))->assertSessionHas('status', 'お問い合わせを送信しました。');
         Mail::assertSent(ContactMail::class, function (ContactMail $mail): bool {
             return $mail->hasTo('admin@example.test') && $mail->hasFrom('app@example.test') && $mail->hasReplyTo('reply@example.test')
-                && $mail->contact_name === '山田太郎' && $mail->contact_body === $this->validData()['message'];
+                && $mail->contactName === '山田太郎' && $mail->contactBody === $this->validData()['message'];
         });
         Mail::assertSentCount(1);
     }
@@ -62,7 +62,9 @@ class ContactTest extends TestCase
     /** @return array<string, array{string, mixed}> */
     public static function invalidInputs(): array
     {
-        return ['missing name' => ['name', ''], 'name array' => ['name', ['name']], 'long name' => ['name', str_repeat('あ', 256)],
+        return ['halfwidth name' => ['name', 'ﾔﾏﾀﾞ'], 'emoji name' => ['name', '山田😀'],
+            'halfwidth message' => ['message', 'ｱﾌﾟﾘについて'], 'emoji message' => ['message', '質問😀'],
+            'missing name' => ['name', ''], 'name array' => ['name', ['name']], 'long name' => ['name', str_repeat('あ', 256)],
             'missing email' => ['email', ''], 'email format' => ['email', 'invalid'], 'long email' => ['email', str_repeat('a', 250).'@example.test'],
             'header injection' => ['email', "reply@example.test\r\nBcc: victim@example.test"],
             'missing message' => ['message', ''], 'message array' => ['message', ['message']], 'long message' => ['message', str_repeat('あ', 2001)]];
@@ -74,6 +76,17 @@ class ContactTest extends TestCase
         $this->actingAs(User::factory()->create())->post(route('contact.store'), array_replace($this->validData(), [
             'name' => str_repeat('あ', 255), 'message' => str_repeat('あ', 2000),
         ]))->assertSessionHasNoErrors()->assertRedirect(route('products.index'));
+        Mail::assertSentCount(1);
+    }
+
+    public function test_symbols_fullwidth_text_and_multiline_content_are_accepted(): void
+    {
+        Mail::fake();
+        $this->actingAs(User::factory()->create())->post(route('contact.store'), [
+            'name' => '山田 Taro（担当者）',
+            'email' => 'reply@example.test',
+            'message' => "URL: https://example.test/?a=1&b=2\n\t価格は￥１００です。「確認」お願いします。",
+        ])->assertSessionHasNoErrors()->assertRedirect(route('products.index'));
         Mail::assertSentCount(1);
     }
 

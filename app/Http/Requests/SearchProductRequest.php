@@ -7,22 +7,33 @@ use Illuminate\Validation\Validator;
 
 class SearchProductRequest extends FormRequest
 {
+    /**
+     * この操作をしてよい人か確認します。入力値が正しいかの確認とは別の役割です。
+     */
     public function authorize(): bool
     {
         return $this->user() !== null;
     }
 
-    /** @return array<string, array<mixed>> */
+    /**
+     * 空の検索条件は許可し、入力がある場合だけ文字種や整数の範囲を確認します。
+     *
+     * @return array<string, array<mixed>>
+     */
     public function rules(): array
     {
         return [
-            'product_name' => ['nullable', 'string', 'max:255'],
+            'product_name' => ['nullable', 'string', 'max:255', 'regex:/\A[\x20-\x7E\p{Han}\p{Hiragana}ァ-ヺー々〆〇\x{3000}-\x{303F}\x{FF01}-\x{FF60}\x{FFE0}-\x{FFE6}]+\z/u'],
             'min_price' => ['nullable', 'integer', 'min:0', 'max:2147483647', 'regex:/\A[0-9]+\z/'],
             'max_price' => ['nullable', 'integer', 'min:0', 'max:2147483647', 'regex:/\A[0-9]+\z/'],
         ];
     }
 
-    /** @return array<callable> */
+    /**
+     * 各項目のチェックが済んでから、最低価格が最高価格を超えていないか確認します。
+     *
+     * @return array<callable>
+     */
     public function after(): array
     {
         return [function (Validator $validator): void {
@@ -34,11 +45,16 @@ class SearchProductRequest extends FormRequest
         }];
     }
 
-    /** @return array<string, string> */
+    /**
+     * 入力エラーを、利用者が読める日本語の案内にします。
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [
             'product_name.string' => '商品名は文字列で入力してください。',
+            'product_name.regex' => '商品名は半角英数字・記号・全角文字・空白で入力してください。',
             'product_name.max' => '商品名は255文字以内で入力してください。',
             'min_price.*' => '最低価格は0〜2147483647の半角数字の整数で入力してください。',
             'max_price.*' => '最高価格は0〜2147483647の半角数字の整数で入力してください。',

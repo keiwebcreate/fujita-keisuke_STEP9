@@ -2,6 +2,7 @@ import { initializePurchaseForms } from './product_purchase';
 import { initializeProductFavorites } from './product_favorites';
 import { initializeProductSearch } from './product_search';
 
+// スマートフォン用メニューを開閉します。Escapeキーや画面幅の変更でも閉じられます。
 function initializeNavigation() {
     document.querySelectorAll('[data-navigation]').forEach((navigation) => {
         const toggle_button = navigation.querySelector('[data-navigation-toggle]');
@@ -24,6 +25,7 @@ function initializeNavigation() {
     });
 }
 
+// 利用者メニューを開閉します。外側のクリックやキーボード操作にも対応します。
 function initializeDropdowns() {
     document.querySelectorAll('[data-dropdown]').forEach((dropdown, index) => {
         const trigger_button = dropdown.querySelector('[data-dropdown-trigger] button');
@@ -57,6 +59,7 @@ function initializeDropdowns() {
     });
 }
 
+// 確認用の小窓（モーダル）を開閉します。開いている間は背景をスクロールさせません。
 function initializeModals() {
     const updateModalState = () => {
         document.body.classList.toggle('site-page--modal-open', Boolean(document.querySelector('dialog[open]')));
@@ -88,6 +91,8 @@ function initializeModals() {
     updateModalState();
 }
 
+// HTMLのdata-*属性を目印に、各画面にある部品へ操作を登録します。
+// 対象の部品がない画面では、その部品の処理は動きません。
 initializeNavigation();
 initializeDropdowns();
 initializeModals();

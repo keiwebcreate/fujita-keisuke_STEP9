@@ -1,3 +1,4 @@
+{{-- 本人の出品商品を表示します。削除ボタンで確認を開き、確定時だけ削除を送信します。 --}}
 <x-app-layout>
     <x-slot name="header"><h1 class="page-header__title">出品商品詳細</h1></x-slot>
     <div class="page-content">
@@ -20,6 +21,7 @@
                             <p>「{{ $product->product_name }}」を削除しますか？</p>
                             <p>削除後は一覧から非表示になります。購入履歴は保持されます。</p>
                             <form method="POST" action="{{ route('listed_products.destroy', $product->id) }}">
+                                {{-- csrfは、他のサイトから勝手に送信されるのを防ぐ確認用の値を埋め込みます。 --}}
                                 @csrf
                                 @method('DELETE')
                                 <div class="form-actions">

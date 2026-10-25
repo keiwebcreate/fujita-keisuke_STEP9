@@ -11,10 +11,17 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+/**
+ * ルートは「このURLへ来たら、どの処理を呼ぶか」の案内表です。
+ * GETは表示、POSTは登録、PATCHは更新、DELETEは削除に使います。nameはリンク作成用の名前です。
+ */
 Route::get('/', fn (Request $request): RedirectResponse => to_route(
     $request->user() ? 'products.index' : 'login'
 ))->name('home');
 
+/**
+ * authはログイン確認の門番です。このグループの画面や更新処理はログイン後にだけ使えます。
+ */
 Route::middleware('auth')->group(function (): void {
     Route::get('/contact', [ContactController::class, 'create'])->name('contact.create');
     Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');

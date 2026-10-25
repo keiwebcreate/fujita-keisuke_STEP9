@@ -12,6 +12,8 @@ use Illuminate\View\View;
 class AuthenticatedSessionController extends Controller
 {
     /**
+     * ログイン画面を表示します。
+     *
      * Display the login view.
      */
     public function create(): View
@@ -20,6 +22,9 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
+     * メールとパスワードを確認し、成功したらセッション（ログイン状態を覚える仕組み）のIDを作り直します。
+     * 以前のIDを使い回す危険を減らし、商品一覧へ移動します。
+     *
      * Handle an incoming authentication request.
      */
     public function store(LoginRequest $request): RedirectResponse
@@ -33,6 +38,8 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
+     * ログイン状態を終了し、セッションと不正送信防止用の合言葉も作り直します。
+     *
      * Destroy an authenticated session.
      */
     public function destroy(Request $request): RedirectResponse

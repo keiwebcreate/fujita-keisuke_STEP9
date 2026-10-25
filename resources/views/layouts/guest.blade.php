@@ -1,3 +1,4 @@
+{{-- ログイン前の画面の外枠です。viteでまとめたCSSとJavaScriptを読み込みます。 --}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>

@@ -1,3 +1,4 @@
+{{-- 一覧の表だけを作る部品です。初回表示とJavaScriptによる検索で同じ表示を使います。 --}}
 @if ($products->isEmpty())
     <p class="empty-message" role="status">表示できる商品はありません。</p>
 @else

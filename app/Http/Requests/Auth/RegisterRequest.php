@@ -7,12 +7,20 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterRequest extends FormRequest
 {
+    /**
+     * この操作をしてよい人か確認します。入力値が正しいかの確認とは別の役割です。
+     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /** @return array<string, array<mixed>> */
+    /**
+     * 名前の文字種、メールの重複、パスワードの長さなどを登録前に確認します。
+     * confirmedは、パスワードと確認用入力が同じか調べる指定です。
+     *
+     * @return array<string, array<mixed>>
+     */
     public function rules(): array
     {
         return [

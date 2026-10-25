@@ -10,11 +10,17 @@ use Throwable;
 
 class AccountController extends Controller
 {
+    /**
+     * ログインしている本人の情報を、編集画面へ渡します。
+     */
     public function edit(Request $request): View
     {
         return view('mypage.account_edit', ['user' => $request->user()]);
     }
 
+    /**
+     * 検証済みの入力をモデルに渡します。失敗時は入力を残して編集画面へ戻します。
+     */
     public function update(UpdateAccountRequest $request): RedirectResponse
     {
         try {

@@ -1,3 +1,4 @@
+{{-- 本人の4項目を編集します。oldは前回の入力を取り出し、入力エラー後も打ち直しを減らします。 --}}
 <x-app-layout>
     <x-slot name="header"><h1 class="page-header__title">アカウント情報編集</h1></x-slot>
     <div class="page-content">
@@ -6,6 +7,7 @@
                 <div class="content-panel__body">
                     <x-input_error :messages="$errors->get('account')" />
                     <form method="POST" action="{{ route('account.update') }}">
+                        {{-- csrfは、他のサイトから勝手に送信されるのを防ぐ確認用の値を埋め込みます。 --}}
                         @csrf
                         @method('PATCH')
                         @foreach (['name' => ['ユーザー名', 'accountName', 'text'], 'email' => ['Eメール', 'accountEmail', 'email'], 'name_kanji' => ['名前（漢字）', 'accountNameKanji', 'text'], 'name_kana' => ['名前（カナ）', 'accountNameKana', 'text']] as $field => [$label, $id, $type])

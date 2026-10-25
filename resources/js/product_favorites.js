@@ -1,8 +1,10 @@
+// ハートを押すとサーバーへ登録・解除を依頼し、成功が確認できてから表示を変えます。
 export function initializeProductFavorites() {
     document.querySelectorAll('[data-product-favorite]').forEach((favorite) => {
         const button = favorite.querySelector('[data-favorite-button]');
         const status = favorite.querySelector('[data-favorite-status]');
         const error_message = favorite.querySelector('[data-favorite-error]');
+        // 通信中の連打を止め、登録と解除の依頼が重ならないようにします。
         let processing = false;
         button.addEventListener('click', async () => {
             if (processing) {
@@ -23,6 +25,7 @@ export function initializeProductFavorites() {
                     headers: {
                         Accept: 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
+                        // CSRFトークンは、この画面からの送信かサーバーが確かめるための合言葉です。
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     },
                 });
@@ -47,6 +50,7 @@ export function initializeProductFavorites() {
                     ? '通信結果を確認できませんでした。画面を再読み込みして状態を確認し、再度お試しください。'
                     : error.message;
                 error_message.hidden = false;
+            // 成功でも失敗でも最後に操作可能へ戻し、キーボード操作中ならフォーカスも戻します。
             } finally {
                 status.textContent = button.getAttribute('aria-pressed') === 'true' ? 'お気に入り登録済み' : 'お気に入り未登録';
                 button.disabled = false;

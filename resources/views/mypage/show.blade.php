@@ -1,3 +1,4 @@
+{{-- 本人の情報、出品商品、購入履歴を表示します。データの読み込みはモデルで済ませています。 --}}
 <x-app-layout>
     <x-slot name="header"><h1 class="page-header__title">マイページ</h1></x-slot>
     <div class="page-content">
@@ -5,11 +6,8 @@
             @if (session('status'))
                 <p class="status-message status-message--success" role="status">{{ session('status') }}</p>
             @endif
-            <section class="content-panel" aria-labelledby="userInfoTitle">
+            <section class="content-panel" aria-label="ユーザー情報">
                 <div class="content-panel__body">
-                    <div class="mypage-section__header">
-                        <h2 id="userInfoTitle" class="mypage-section__title">ユーザー情報</h2>
-                    </div>
                     <div class="mypage-section__account-action"><x-action_link :href="route('account.edit')">アカウント編集</x-action_link></div>
                     <dl class="user-info">
                         <div class="user-info__row"><dt class="user-info__label">ユーザー名</dt><dd class="user-info__value">{{ $user->name }}</dd></div>

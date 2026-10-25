@@ -16,6 +16,12 @@ class Sale extends Model
     /** @use HasFactory<SaleFactory> */
     use HasFactory;
 
+    /**
+     * 購入記録の追加と在庫の減算を、画面とAPIで共通の処理にします。
+     * transactionは「全部成功したら保存し、途中で失敗したら全部戻す」というDBの仕組みです。
+     * lockForUpdateで商品の更新を順番待ちにし、最後の1個を2人に売ることを防ぎます。
+     * 順番が来てから最新の在庫と出品者を確認し、不足なら409（状態の衝突）で止めます。
+     */
     public static function purchase(int $buyer_id, string $product_id, int $quantity): self
     {
         abort_if($quantity < 1 || $quantity > 2147483647, 422, '購入数量が不正です。');
@@ -37,19 +43,32 @@ class Sale extends Model
         });
     }
 
-    /** @return BelongsTo<User, $this> */
+    /**
+     * この購入を行った利用者へのつながりです。
+     *
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /** @return BelongsTo<Product, $this> */
+    /**
+     * 削除済みの商品も取り出し、購入履歴に表示できるようにします。
+     * 表示する名前や価格は購入時の写しではなく、商品の現在の情報です。
+     *
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class)->withTrashed();
     }
 
-    /** @return array<string, string> */
+    /**
+     * 購入数量を整数として扱います。
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return ['quantity' => 'integer'];

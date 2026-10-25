@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /** @extends Factory<Like> */
 class LikeFactory extends Factory
 {
-    /** @return array<string, mixed> */
+    /**
+     * テスト用のお気に入りと、その利用者・商品を用意します。
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         return ['user_id' => UserFactory::new(), 'product_id' => ProductFactory::new()];

@@ -1,3 +1,4 @@
+{{-- 保存先の形式と実ファイルを確認し、表示できる画像がなければ「画像なし」にします。 --}}
 @props(['path', 'name', 'compact' => false])
 @php
     $valid_path = is_string($path)

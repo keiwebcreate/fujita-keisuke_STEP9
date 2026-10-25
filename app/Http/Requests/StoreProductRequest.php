@@ -7,12 +7,20 @@ use Illuminate\Validation\Validator;
 
 class StoreProductRequest extends FormRequest
 {
+    /**
+     * この操作をしてよい人か確認します。入力値が正しいかの確認とは別の役割です。
+     */
     public function authorize(): bool
     {
         return $this->user() !== null;
     }
 
-    /** @return array<string, array<mixed>> */
+    /**
+     * 商品名・説明・価格・在庫・画像の入力条件を定義します。
+     * requiredは必須、maxは上限、regexは許可文字の決まりです。画像のmax:2048は2MiBを表します。
+     *
+     * @return array<string, array<mixed>>
+     */
     public function rules(): array
     {
         return [
@@ -24,7 +32,11 @@ class StoreProductRequest extends FormRequest
         ];
     }
 
-    /** @return array<callable> */
+    /**
+     * 文字や数値のチェックに加え、出品者に所属会社が設定されているか確認します。
+     *
+     * @return array<callable>
+     */
     public function after(): array
     {
         return [function (Validator $validator): void {
@@ -34,13 +46,21 @@ class StoreProductRequest extends FormRequest
         }];
     }
 
-    /** @return array<string, string> */
+    /**
+     * プログラム用の項目名を、エラー表示用の日本語に置き換えます。
+     *
+     * @return array<string, string>
+     */
     public function attributes(): array
     {
         return ['product_name' => '商品名', 'description' => '商品説明', 'price' => '価格', 'stock' => '在庫数', 'image' => '商品画像'];
     }
 
-    /** @return array<string, string> */
+    /**
+     * 入力エラーを、利用者が読める日本語の案内にします。
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [

@@ -1,3 +1,4 @@
+{{-- 商品の詳細と本人のお気に入り状態を表示します。自分の商品や売切れ商品は購入操作を無効にします。 --}}
 <x-app-layout>
     <x-slot name="header"><h1 class="page-header__title">商品詳細</h1></x-slot>
     <div class="page-content">
