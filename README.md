@@ -5,12 +5,14 @@
 ## 構成
 
 - PHP 8.5.12 / Laravel 13 / Laravel Sail
-- Laravel Breeze 2.4.2（Blade・PHPUnit）、Alpine.js
-- Vite 8 / Tailwind CSS 4（Breeze生成スタイルを4系へ調整）
+- Laravel Breeze 2.4.2（Blade・PHPUnit）
+- Vite 8 / BEM形式の外部CSS / 外部JavaScript（メニュー・モーダル等）
 - MySQL 8.4 / phpMyAdmin / Mailpit
 - Laravel Boost（AGENTS.mdの指定に従った開発用パッケージ）
 
 現在はBreeze標準の認証画面までを導入した段階です。漢字名・カナ名、登録後のログイン画面への遷移、商品画面などは後続STEPで実装します。Breeze標準のダッシュボード・プロフィール等も、後続STEPで仕様に合わせて整理します。
+
+コーディング規約への対応として、生成画面のTailwindクラスを通常CSSへ置き換え、Viewファイル名をスネークケース、HTMLのclassをBEM、IDをローワーキャメルへ統一しています。画面操作は外部JavaScript、入力検証はForm Request、DB保存はUserモデルへ配置します。
 
 ## 初回セットアップ
 
@@ -112,5 +114,14 @@ Laravelセットアップ後にGit設定済みです。`.env`・`vendor/`・`nod
 ## 参照資料
 
 - [Laravel Breeze](https://github.com/laravel/breeze)
-- [Tailwind CSS 4への移行](https://tailwindcss.com/docs/upgrade-guide)
 - [phpMyAdmin Docker設定](https://docs.phpmyadmin.net/en/latest/setup.html#installing-using-docker)
+
+## コーディング規約への対応確認（2026-10-25）
+
+- Tailwind CSS・Alpine.jsの依存を削除し、外部の通常CSS・JavaScriptへ移行。
+- Breeze生成Viewも含めてBEMクラス・ローワーキャメルのID・スネークケースのViewファイル名へ統一。
+- 既存Controllerの入力検証をForm Requestへ移し、ユーザーの登録・更新・削除・パスワード保存をUserモデルへ集約。
+- ビルド・Pint・既存の25テスト（61 assertions）に成功。
+- Chromiumで認証画面、登録・ログイン・ログアウト、プロフィール更新、デスクトップのドロップダウン、モバイルメニュー、モーダルのフォーカス・キャンセル・Esc・入力エラー後の再表示・確定処理を確認。アプリ側のクラス名・ID・ラベルの対応も確認。
+- ブラウザ確認は専用の`testing`データベースを使用。開発用DBのユーザーデータは変更していない。
+- コミットはユーザーが行う。
