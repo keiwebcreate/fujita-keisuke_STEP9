@@ -1,3 +1,5 @@
+/* CSSは色・余白・配置の指定です。--color-*などの変数で共通の色をまとめています。
+   クラス名は「部品__部分--状態」の形を基本にして、どの部品の指定か分かるようにしています。 */
 :root {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: #111827;
@@ -28,6 +30,7 @@ button:disabled, input:disabled { cursor: not-allowed; opacity: .5; }
 .auth-page__title { margin: 0 -1.5rem 1.5rem; padding: .75rem 1rem; background: #f7f7f7; border-bottom: 1px solid var(--color-border); font-size: 1rem; font-weight: 400; }
 .auth-page__description { margin-bottom: 1rem; font-size: .875rem; color: var(--color-muted); }
 .auth-page__status { margin-bottom: 1rem; }
+/* 入力欄とエラーメッセージの共通デザイン。 */
 .form-field { margin-top: 1rem; }
 .form-field__label { display: block; font-size: .875rem; font-weight: 500; color: #374151; }
 .form-field__label--visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
@@ -52,6 +55,7 @@ button:disabled, input:disabled { cursor: not-allowed; opacity: .5; }
 .status-message { margin: 0; color: var(--color-muted); font-size: .875rem; }
 .status-message--success { color: #15803d; font-weight: 500; }
 .auth-page__status.status-message { margin-bottom: 1rem; }
+/* ログイン後のヘッダーとメニューの配置。 */
 .site-navigation { border-bottom: 1px solid #f3f4f6; background: white; }
 .site-navigation__container, .page-header__container, .page-content__container { max-width: 80rem; margin: auto; padding: 0 1rem; }
 .site-navigation__bar { display: flex; min-height: 4rem; align-items: center; gap: 1.5rem; padding: .5rem 0; }
@@ -92,12 +96,15 @@ button:disabled, input:disabled { cursor: not-allowed; opacity: .5; }
 .modal--wide { max-width: 36rem; }
 .modal--extra-wide { max-width: 42rem; }
 .modal__body { padding: 1.5rem; }
+/* この条件に当てはまる画面幅だけ、下の配置に切り替えます。 */
 @media (min-width: 640px) {
     .site-navigation__container, .page-header__container, .page-content__container { padding-left: 1.5rem; padding-right: 1.5rem; }
 }
+/* この条件に当てはまる画面幅だけ、下の配置に切り替えます。 */
 @media (min-width: 1024px) {
     .site-navigation__container, .page-header__container, .page-content__container { padding-left: 2rem; padding-right: 2rem; }
 }
+/* この条件に当てはまる画面幅だけ、下の配置に切り替えます。 */
 @media (prefers-reduced-motion: reduce) { .button { transition: none; } }
 .site-page--authenticated { display: flex; flex-direction: column; }
 .site-page__main { flex: 1; }
@@ -137,11 +144,13 @@ button:disabled, input:disabled { cursor: not-allowed; opacity: .5; }
 .product-info__value--multiline { white-space: pre-wrap; }
 .product-detail__notice { margin: 1rem 0; color: var(--color-muted); font-size: .875rem; }
 .stock-status { color: var(--color-danger); font-weight: 600; }
+/* この条件に当てはまる画面幅だけ、下の配置に切り替えます。 */
 @media (min-width: 960px) {
     .site-navigation__links { display: flex; align-items: center; gap: 1.25rem; margin-left: auto; }
     .site-navigation__account { display: flex; }
     .site-navigation__toggle, .site-navigation__mobile { display: none; }
 }
+/* この条件に当てはまる画面幅だけ、下の配置に切り替えます。 */
 @media (max-width: 479px) {
     .content-panel__body { padding: 1rem 0; }
     .product-info__row { grid-template-columns: 1fr; gap: .25rem; }
@@ -153,7 +162,9 @@ button:disabled, input:disabled { cursor: not-allowed; opacity: .5; }
 .user-info__row { display: grid; grid-template-columns: 6rem minmax(0, 1fr); gap: .75rem; }
 .user-info__label { color: var(--color-muted); }
 .user-info__value { margin: 0; overflow-wrap: anywhere; }
+/* この条件に当てはまる画面幅だけ、下の配置に切り替えます。 */
 @media (min-width: 800px) { .user-info { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; grid-auto-flow: column; } }
+/* この条件に当てはまる画面幅だけ、下の配置に切り替えます。 */
 @media (max-width: 479px) { .user-info__row { grid-template-columns: 1fr; gap: .25rem; } }
 
 .site-page--guest { display: flex; flex-direction: column; background: #f8f9fa; }
@@ -177,6 +188,7 @@ button:disabled, input:disabled { cursor: not-allowed; opacity: .5; }
 .product-info__label { font-weight: 400; }
 .product-info__row:has(.product-image) { margin-top: 1.5rem; margin-bottom: 1.5rem; }
 .product-image { background: transparent; border-radius: 0; }
+/* この条件に当てはまる画面幅だけ、下の配置に切り替えます。 */
 @media (max-width: 639px) {
     .guest-navigation__container { padding: 1rem; }
     .auth-panel { padding: 0 1rem 1rem; }
@@ -186,6 +198,7 @@ button:disabled, input:disabled { cursor: not-allowed; opacity: .5; }
     .auth-form .form-field__errors { grid-column: 1; }
     .auth-form .form-actions { margin-left: 0; }
 }
+/* 画像の入力欄。編集時はラベル・元の画像・選択欄を横並びにし、狭い画面では折り返します。 */
 .product-form__file { display: block; max-width: 100%; margin-top: .5rem; }
 .product-form__help { margin: .5rem 0 0; font-size: .875rem; color: var(--color-muted); }
 .product-form__notice { color: var(--color-danger); }
@@ -193,6 +206,7 @@ button:disabled, input:disabled { cursor: not-allowed; opacity: .5; }
 .product-form__image-row .product-form__file { margin-top: 0; }
 .product-form__image-row .product-image--compact { width: 8rem; min-height: 6rem; }
 .product-form__image-row .product-image__content { max-height: 6rem; }
+/* 検索欄の並び方。スマートフォンでは欄を折り返して画面内に収めます。 */
 .product-search { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 1rem; margin: 0 0 1.5rem; }
 .product-search__field { flex: 0 1 11rem; min-width: 0; }
 .product-search__field--name { flex-basis: 17rem; }
@@ -201,11 +215,13 @@ button:disabled, input:disabled { cursor: not-allowed; opacity: .5; }
 .product-search__status { margin: 0 0 1rem; font-size: .875rem; color: var(--color-muted); }
 .product-search__status:empty { display: none; }
 .product-search__error { color: var(--color-danger); }
+/* この条件に当てはまる画面幅だけ、下の配置に切り替えます。 */
 @media (max-width: 639px) {
     .product-search { gap: .5rem; justify-content: flex-start; }
     .product-search__field--name { flex: 1 0 100%; }
     .product-search__field:not(.product-search__field--name) { flex: 1 1 8rem; }
 }
+/* お気に入りのハート。activeが付くと白から赤へ切り替わります。 */
 .product-favorite { margin-top: .5rem; }
 .favorite-button { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; min-width: 2.75rem; min-height: 2.75rem; padding: .375rem; border: 0; border-radius: .25rem; background: transparent; }
 .favorite-button__icon { display: block; width: 1.75rem; height: 1.75rem; overflow: visible; fill: white; stroke: #dc2626; stroke-width: 1.5; stroke-linejoin: round; }

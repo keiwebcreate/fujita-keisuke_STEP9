@@ -1,3 +1,4 @@
+{{-- ログイン後の画面に共通する外枠です。slotへ各画面の中身を入れ、ヘッダーとフッターを共有します。 --}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>

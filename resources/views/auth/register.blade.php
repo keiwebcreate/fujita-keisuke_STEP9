@@ -1,6 +1,8 @@
+{{-- 利用者登録用フォームです。画面上の必須指定に加え、サーバー側でも入力を確認します。 --}}
 <x-guest-layout>
     <h1 class="auth-page__title">新規ユーザー登録</h1>
     <form class="auth-form" method="POST" action="{{ route('register') }}">
+        {{-- csrfは、他のサイトから勝手に送信されるのを防ぐ確認用の値を埋め込みます。 --}}
         @csrf
 
         <!-- Name -->

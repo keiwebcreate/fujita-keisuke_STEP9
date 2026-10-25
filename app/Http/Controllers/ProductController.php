@@ -11,6 +11,10 @@ use Illuminate\View\View;
 
 class ProductController extends Controller
 {
+    /**
+     * 入力チェック済みの条件で商品を検索します。
+     * 通常は画面全体、JavaScriptからの検索では一覧部分のHTMLと件数を返します。
+     */
     public function index(SearchProductRequest $request): View|JsonResponse
     {
         $filters = $request->validated();
@@ -25,6 +29,9 @@ class ProductController extends Controller
         return view('products.index', ['products' => $products, 'filters' => $filters]);
     }
 
+    /**
+     * 商品の情報と、本人のお気に入り状態を詳細画面へ渡します。
+     */
     public function show(Request $request, string $product_id): View
     {
         $product = Product::getProductDetail($product_id);

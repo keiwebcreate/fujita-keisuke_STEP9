@@ -1,7 +1,9 @@
+{{-- ログイン用フォームです。入力を送るとLoginRequestで確認され、認証処理へ進みます。 --}}
 <x-guest-layout>
     <h1 class="auth-page__title">ログイン</h1>
     <x-auth_session_status class="auth-page__status" :status="session('status')" />
     <form class="auth-form" method="POST" action="{{ route('login') }}">
+        {{-- csrfは、他のサイトから勝手に送信されるのを防ぐ確認用の値を埋め込みます。 --}}
         @csrf
         <div>
             <x-input_label for="email" value="メールアドレス" />

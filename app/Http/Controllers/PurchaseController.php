@@ -13,6 +13,9 @@ use Throwable;
 
 class PurchaseController extends Controller
 {
+    /**
+     * 購入できる相手の商品を取り出し、数量入力画面を表示します。
+     */
     public function create(Request $request, string $product_id): View
     {
         return view('products.purchase', [
@@ -20,6 +23,10 @@ class PurchaseController extends Controller
         ]);
     }
 
+    /**
+     * チェック済みの数量で購入処理を呼びます。
+     * 在庫不足なら入力数量を残して戻し、それ以外の操作不可や商品なしの結果はそのまま伝えます。
+     */
     public function store(PurchaseRequest $request, string $product_id): RedirectResponse
     {
         try {

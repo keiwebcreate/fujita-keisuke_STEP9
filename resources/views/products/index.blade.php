@@ -1,3 +1,4 @@
+{{-- 商品検索画面です。data-*属性はJavaScriptが検索欄や結果の場所を見つける目印です。 --}}
 <x-app-layout>
     <x-slot name="header"><h1 class="page-header__title">商品一覧</h1></x-slot>
     <div class="page-content">

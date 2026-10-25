@@ -13,6 +13,8 @@ use Illuminate\Validation\ValidationException;
 class LoginRequest extends FormRequest
 {
     /**
+     * この操作をしてよい人か確認します。入力値が正しいかの確認とは別の役割です。
+     *
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
@@ -21,6 +23,8 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * ログインに必要なメールとパスワードが入力されているかを確認します。
+     *
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
@@ -34,6 +38,9 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * ログイン試行回数を確認し、メールとパスワードが一致すればログインします。
+     * 失敗回数を数え、成功時にはその回数をリセットします。
+     *
      * Attempt to authenticate the request's credentials.
      *
      * @throws ValidationException
@@ -54,6 +61,8 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * 短時間に5回以上失敗していたら、しばらく再試行を待ってもらいます。
+     *
      * Ensure the login request is not rate limited.
      *
      * @throws ValidationException
@@ -77,6 +86,8 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * メールと接続元のIPアドレスを組み合わせ、誰の失敗回数を数えるか決めます。
+     *
      * Get the rate limiting throttle key for the request.
      */
     public function throttleKey(): string

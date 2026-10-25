@@ -1,3 +1,4 @@
+{{-- ログイン後の共通ヘッダーです。各画面へのリンクと、ログアウト操作をまとめます。 --}}
 @props(['userName'])
 <nav class="site-navigation" data-navigation aria-label="メインナビゲーション">
     <div class="site-navigation__container">

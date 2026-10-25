@@ -6,6 +6,10 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 
+/**
+ * アプリ起動時にルートの場所、ログイン確認、エラーの返し方を登録します。
+ * APIや非同期通信には、HTMLの画面ではなくJSON形式のエラーを返します。
+ */
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',

@@ -1,3 +1,4 @@
+{{-- 購入する数量を入力する画面です。data-purchase-*をJavaScriptが読み、確認と送信を制御します。 --}}
 <x-app-layout>
     <x-slot name="header"><h1 class="page-header__title">購入画面</h1></x-slot>
     <div class="page-content">
@@ -9,6 +10,7 @@
                         <p class="stock-status" role="status">売り切れのため購入できません。</p>
                     @endif
                     <form id="purchaseForm" method="POST" action="{{ route('purchases.store', $product->id) }}" data-purchase-form>
+                        {{-- csrfは、他のサイトから勝手に送信されるのを防ぐ確認用の値を埋め込みます。 --}}
                         @csrf
                         <x-product_info :product="$product" show-stock show-company>
                             <x-slot name="quantity">

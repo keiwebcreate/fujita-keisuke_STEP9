@@ -1,3 +1,4 @@
+{{-- 登録・編集共通の入力部品です。propsは呼出元からの受け取り口、oldは前回入力、?->は商品がないとき空にする書き方です。 --}}
 @props(['product' => null, 'imageRequired' => true])
 <div class="form-field">
     <x-input_label for="productName" value="商品名（必須）" />

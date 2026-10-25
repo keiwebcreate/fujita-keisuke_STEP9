@@ -18,6 +18,8 @@ class UserFactory extends Factory
     protected static ?string $password;
 
     /**
+     * テスト用の利用者を用意します。fakeは架空データを作る道具で、実在の利用者情報は使いません。
+     *
      * Define the model's default state.
      *
      * @return array<string, mixed>
@@ -46,11 +48,17 @@ class UserFactory extends Factory
         ]);
     }
 
+    /**
+     * 会社に所属している利用者を用意します。出品者のテストなどに使います。
+     */
     public function withCompany(): static
     {
         return $this->for(CompanyFactory::new(), 'company');
     }
 
+    /**
+     * 古いデータなどでカナが未設定の場合を再現します。
+     */
     public function withoutKana(): static
     {
         return $this->state(fn (array $attributes): array => ['name_kana' => null]);

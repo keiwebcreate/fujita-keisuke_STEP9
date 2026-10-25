@@ -14,11 +14,18 @@ use Throwable;
 
 class ListedProductController extends Controller
 {
+    /**
+     * 商品登録画面を表示します。会社未設定なら登録できないことを画面へ伝えます。
+     */
     public function create(Request $request): View
     {
         return view('products.create', ['can_list' => $request->user()->company_id !== null]);
     }
 
+    /**
+     * 画像を保存してから商品を登録します。
+     * 商品登録に失敗した場合は、先に保存した画像も消して不要ファイルを残さないようにします。
+     */
     public function store(StoreProductRequest $request): RedirectResponse
     {
         $image_path = null;
@@ -45,6 +52,9 @@ class ListedProductController extends Controller
         return to_route('mypage.show')->with('status', '商品を登録しました。');
     }
 
+    /**
+     * 本人の出品商品だけを取り出し、出品者向けの詳細画面へ渡します。
+     */
     public function show(Request $request, string $product_id): View
     {
         $product = Product::getOwnedProductDetail($product_id, $request->user()->id);
@@ -52,6 +62,9 @@ class ListedProductController extends Controller
         return view('products.listed_show', ['product' => $product]);
     }
 
+    /**
+     * 本人の商品であることを確認して、編集画面を表示します。
+     */
     public function edit(Request $request, string $product_id): View
     {
         return view('products.edit', [
@@ -59,6 +72,10 @@ class ListedProductController extends Controller
         ]);
     }
 
+    /**
+     * 新しい画像があれば保存し、モデルに商品更新を依頼します。
+     * 失敗時は新画像、成功時は不要になった旧画像を片付けるので、使っている画像を先に消しません。
+     */
     public function update(UpdateProductRequest $request, string $product_id): RedirectResponse
     {
         $product = Product::getOwnedProductDetail($product_id, $request->user()->id);
@@ -90,6 +107,9 @@ class ListedProductController extends Controller
         return to_route('listed_products.show', $product_id)->with('status', '商品を更新しました。');
     }
 
+    /**
+     * モデルに論理削除を依頼し、成功したらマイページへ戻します。
+     */
     public function destroy(Request $request, string $product_id): RedirectResponse
     {
         $product = Product::getOwnedProductDetail($product_id, $request->user()->id);
@@ -105,6 +125,10 @@ class ListedProductController extends Controller
         return to_route('mypage.show')->with('status', '商品を削除しました。');
     }
 
+    /**
+     * このアプリの商品画像という形式に合う保存先だけを削除します。
+     * 画像の片付けに失敗しても、既に成功した商品更新は取り消さずログへ記録します。
+     */
     private function removeImage(string $image_path): void
     {
         if (preg_match('/\Aproducts\/[A-Za-z0-9_-]+\.(?:jpe?g|png|webp)\z/i', $image_path) !== 1) {

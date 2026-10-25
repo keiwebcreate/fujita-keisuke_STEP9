@@ -1,3 +1,4 @@
+{{-- 本人の情報、出品商品、購入履歴を表示します。データの読み込みはモデルで済ませています。 --}}
 <x-app-layout>
     <x-slot name="header"><h1 class="page-header__title">マイページ</h1></x-slot>
     <div class="page-content">

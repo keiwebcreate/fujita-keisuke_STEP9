@@ -1,3 +1,4 @@
+{{-- 商品情報の共通部品です。会社・在庫の表示や数量欄は、呼出元の指定で切り替えます。 --}}
 @props(['product', 'showCompany' => false, 'showStock' => false])
 <dl class="product-info">
     <div class="product-info__row"><dt class="product-info__label">商品名</dt><dd class="product-info__value">{{ $product->product_name }}</dd></div>

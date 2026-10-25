@@ -1,3 +1,4 @@
+{{-- 確認用の小窓の共通部品です。nameを目印にJavaScriptが開閉し、slotに確認内容を入れます。 --}}
 @props(['name', 'show' => false, 'maxWidth' => '2xl'])
 @php
     $width_class = match ($maxWidth) {

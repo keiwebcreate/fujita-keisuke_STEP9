@@ -1,3 +1,4 @@
+{{-- 商品登録画面です。共通の入力部品を使い、画像も送れる形式で送信します。 --}}
 <x-app-layout>
     <x-slot name="header"><h1 class="page-header__title">商品登録</h1></x-slot>
     <div class="page-content">
@@ -10,6 +11,7 @@
                     <x-input_error :messages="$errors->get('company')" />
                     <x-input_error :messages="$errors->get('registration')" />
                     <form method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" class="product-form">
+                        {{-- csrfは、他のサイトから勝手に送信されるのを防ぐ確認用の値を埋め込みます。 --}}
                         @csrf
                         <x-product_form_fields />
                         <div class="form-actions">

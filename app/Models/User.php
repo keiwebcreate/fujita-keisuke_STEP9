@@ -22,6 +22,8 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
+     * パスワードはhashedの指定で、元に戻せない形に変換して保存します。
+     *
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -34,30 +36,50 @@ class User extends Authenticatable
         ];
     }
 
-    /** @return BelongsTo<Company, $this> */
+    /**
+     * 利用者の所属会社へのつながりです。会社未設定の人もいます。
+     *
+     * @return BelongsTo<Company, $this>
+     */
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
     }
 
-    /** @return HasMany<Product, $this> */
+    /**
+     * この人が出品した商品へのつながりです。
+     *
+     * @return HasMany<Product, $this>
+     */
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }
 
-    /** @return HasMany<Sale, $this> */
+    /**
+     * この人が購入した記録へのつながりです。
+     *
+     * @return HasMany<Sale, $this>
+     */
     public function sales(): HasMany
     {
         return $this->hasMany(Sale::class);
     }
 
-    /** @return HasMany<Like, $this> */
+    /**
+     * この人のお気に入り登録へのつながりです。
+     *
+     * @return HasMany<Like, $this>
+     */
     public function likes(): HasMany
     {
         return $this->hasMany(Like::class);
     }
 
+    /**
+     * マイページで使う出品商品と購入履歴を、関連商品も含めてまとめて読み込みます。
+     * 先に読み込むことで、表の1行ごとに何度もDBへ問い合わせることを避けます。
+     */
     public function getMyPageData(): self
     {
         return $this->load([
@@ -67,7 +89,11 @@ class User extends Authenticatable
         ]);
     }
 
-    /** @param array<string, mixed> $validated_data */
+    /**
+     * 本人が変更できる4項目だけ保存します。会社やパスワードはここでは変更しません。
+     *
+     * @param  array<string, mixed>  $validated_data
+     */
     public function updateAccount(array $validated_data): void
     {
         DB::transaction(function () use ($validated_data): void {
@@ -83,7 +109,11 @@ class User extends Authenticatable
         });
     }
 
-    /** @param array<string, mixed> $validated_data */
+    /**
+     * 入力チェックを通過した利用者情報をDBに登録します。
+     *
+     * @param  array<string, mixed>  $validated_data
+     */
     public static function registerUser(array $validated_data): self
     {
         return self::create($validated_data);

@@ -7,12 +7,19 @@ use Illuminate\Validation\Validator;
 
 class SearchProductRequest extends FormRequest
 {
+    /**
+     * この操作をしてよい人か確認します。入力値が正しいかの確認とは別の役割です。
+     */
     public function authorize(): bool
     {
         return $this->user() !== null;
     }
 
-    /** @return array<string, array<mixed>> */
+    /**
+     * 空の検索条件は許可し、入力がある場合だけ文字種や整数の範囲を確認します。
+     *
+     * @return array<string, array<mixed>>
+     */
     public function rules(): array
     {
         return [
@@ -22,7 +29,11 @@ class SearchProductRequest extends FormRequest
         ];
     }
 
-    /** @return array<callable> */
+    /**
+     * 各項目のチェックが済んでから、最低価格が最高価格を超えていないか確認します。
+     *
+     * @return array<callable>
+     */
     public function after(): array
     {
         return [function (Validator $validator): void {
@@ -34,7 +45,11 @@ class SearchProductRequest extends FormRequest
         }];
     }
 
-    /** @return array<string, string> */
+    /**
+     * 入力エラーを、利用者が読める日本語の案内にします。
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [

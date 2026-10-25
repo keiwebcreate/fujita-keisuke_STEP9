@@ -1,3 +1,4 @@
+// ページ全体を読み直さず、サーバーから受け取った商品一覧だけを差し替えます。
 export function initializeProductSearch() {
     document.querySelectorAll('[data-product-search]').forEach((form) => {
         const results = document.querySelector('[data-search-results]');
@@ -5,6 +6,7 @@ export function initializeProductSearch() {
         const error_message = document.querySelector('[data-search-error]');
         const button = form.querySelector('button[type="submit"]');
         let controller;
+        // 検索に通し番号を付け、古い検索の返事が後から届いても最新結果を上書きさせません。
         let request_number = 0;
 
         const setBusy = (busy) => {
@@ -17,6 +19,7 @@ export function initializeProductSearch() {
             error_message.hidden = true;
             error_message.textContent = '';
         };
+        // 条件が変わったら通信を中止し、前の条件の結果が表示されるのを防ぎます。
         form.addEventListener('input', () => {
             request_number += 1;
             controller?.abort();
@@ -76,6 +79,7 @@ export function initializeProductSearch() {
                 if (typeof data.html !== 'string' || !Number.isInteger(data.count)) {
                     throw new Error('検索結果を取得できませんでした。再度お試しください。');
                 }
+                // ここへ入れるHTMLは、サーバーのBladeで入力文字を安全に変換して作った商品一覧です。
                 results.innerHTML = data.html;
                 status.textContent = `${data.count}件の商品が見つかりました。`;
             } catch (error) {

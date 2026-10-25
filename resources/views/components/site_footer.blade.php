@@ -1,3 +1,4 @@
+{{-- 各画面で共通のフッターと、お問い合わせへのリンクです。 --}}
 <footer class="site-footer">
     <div class="site-footer__container">
         <x-action_link :href="route('contact.create')">お問い合わせ</x-action_link>

@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
+     * API認証用トークンの確認情報、権限、期限などを保存する表を作ります。
+     *
      * Run the migrations.
      */
     public function up(): void
@@ -24,6 +26,8 @@ return new class extends Migration
     }
 
     /**
+     * この変更を取り消すときに、追加した表や項目を削除します。データも失われるため実行には注意が必要です。
+     *
      * Reverse the migrations.
      */
     public function down(): void
